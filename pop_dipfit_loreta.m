@@ -129,7 +129,7 @@ cfg.dics.lambda       = 0;
 
 for iSelect = select(:)'
     freqPre.powspctrm = EEG.icawinv(:,iSelect).*EEG.icawinv(:,iSelect);
-    freqPre.crsspctrm = EEG.icawinv(:,iSelect)*EEG.icawinv(:,iSelect)'
+    freqPre.crsspctrm = EEG.icawinv(:,iSelect)*EEG.icawinv(:,iSelect)';
     
     sourcePost_nocon = ft_sourceanalysis(cfg, freqPre);
 
@@ -140,6 +140,8 @@ for iSelect = select(:)'
     cfg2            = [];
     cfg2.downsample = 2;
     cfg2.parameter = 'avg.pow';
+    sourcePost_nocon.oridimord = 'pos';
+    sourcePost_nocon.momdimord = 'pos';
     sourcePostInt_nocon  = ft_sourceinterpolate(cfg2, sourcePost_nocon , mri);
     
     cfg2              = struct(g.ft_sourceplot_params{:});
