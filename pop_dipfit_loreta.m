@@ -32,7 +32,7 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function [EEGOUT, com] = pop_dipfit_loreta(EEG, select, varargin)
+function com = pop_dipfit_loreta(EEG, select, varargin)
 
 if nargin < 1
     help pop_dipfit_loreta;
@@ -56,14 +56,14 @@ if ~isfield(EEG, 'dipfit')
     error('General dipolefit settings not specified');
 end
 
-if ~isfield(EEG.dipfit, 'vol') & ~isfield(EEG.dipfit, 'hdmfile')
+if ~isfield(EEG.dipfit, 'vol') && ~isfield(EEG.dipfit, 'hdmfile')
     error('Dipolefit volume conductor model not specified');
 end
 
 dipfitdefs
 if nargin < 2
      uilist = { { 'style' 'text'        'string'  [ 'Enter indices of components ' 10 '(one figure generated per component)'] } ...
-                { 'style' 'edit'        'string'  '5' } ...
+                { 'style' 'edit'        'string'  '1' } ...
                 { 'style' 'text'        'string'  'ft_sourceanalysis parameters' } ...
                 { 'style' 'edit'        'string'  '''method'', ''eloreta''' } ...
                 { 'style' 'text'        'string'  'ft_sourceplot parameters' } ...
