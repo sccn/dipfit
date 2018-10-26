@@ -41,7 +41,7 @@
 
 function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
-    vers = 'dipfit2.4';
+    vers = 'dipfit3.0';
     if nargin < 3
         error('eegplugin_dipfit requires 3 arguments');
     end;
