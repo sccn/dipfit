@@ -78,7 +78,7 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
     % create menus
     % ------------
-    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT 2.x', 'separator', 'on');
+    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on');
     uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting);
     uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch);
     uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit);
