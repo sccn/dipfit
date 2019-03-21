@@ -1,4 +1,7 @@
-% eeglab2fieldtrip() - do this ...
+% eeglab2fieldtrip() - This function converts EEGLAB datasets to Fieldtrip
+%                      for source localization (DIPFIT). IN PRACTICE TO 
+%                      CONVERT DATASETS, IT IS RECOMMENDED TO USE FILE-IO
+%                      see https://sccn.ucsd.edu/wiki/EEGLAB_and_Fieldtrip
 %
 % Usage:
 %  >> [header,dat,evt] = eeglab2fieldtrip( EEG, fieldbox, transform );
