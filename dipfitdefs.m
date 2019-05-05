@@ -39,7 +39,8 @@ try
     end
     nchan = length(EEG(1).chanlocs);
     ncomp = size(EEG(1).icawinv, 2);
-catch, nchan = 0; 
+catch 
+    nchan = 0; 
 end
 
 % create one-sphere model
@@ -63,7 +64,7 @@ if ~iseeglabdeployed
     folder = which('pop_dipfit_settings');
     folder = folder(1:end-21);
 else
-    folder = fullfile(ctfroot, 'plugins', 'dipfit2.3');
+    folder = fullfile(ctfroot, 'EEGLAB', 'plugins', 'dipfit');
 end
 try
     delim  = folder(end);
