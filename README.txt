@@ -9,3 +9,6 @@ v3.1
 
 v3.0
 - Adding support for eLoreta
+
+For documentation see https://sccn.ucsd.edu/wiki/A08:_DIPFIT
+
