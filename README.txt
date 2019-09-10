@@ -1,3 +1,6 @@
+v3.3
+- Ensures backward compatiblity with old versions of EEGLAB
+
 v3.2
 - Fix bug with missing folders
 
