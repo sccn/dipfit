@@ -67,7 +67,7 @@ function [OUTEEG, com] = pop_dipfit_settings ( EEG, varargin )
 if nargin < 1
    help pop_dipfit_settings;
    return;
-end;
+end
 
 if ~plugin_askinstall('Fieldtrip-lite', 'ft_dipolefitting'), return; end;
 
@@ -90,37 +90,37 @@ if nargin < 2
         set(findobj(gcf, 'tag', 'mri'  ), 'string', char(tmpdat(tmpval).mrifile));
         set(findobj(gcf, 'tag', 'meg'), 'string', char(tmpdat(tmpval).chanfile));
         set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
-        if tmpval < 3,
+        if tmpval < 3
             set(findobj(gcf, 'userdata', 'editable'), 'enable', 'off');
-        else,
+        else
             set(findobj(gcf, 'userdata', 'editable'), 'enable', 'on');
-        end;
-        if tmpval == 3,
+        end
+        if tmpval == 3
             set(findobj(gcf, 'tag', 'headstr'), 'string', 'Subject CTF head model file (default.htm)');
             set(findobj(gcf, 'tag', 'mristr'),  'string', 'Subject MRI (coregistered with CTF head)');
             set(findobj(gcf, 'tag', 'chanstr'), 'string', 'CTF Res4 file');
             set(findobj(gcf, 'tag', 'manualcoreg'), 'enable', 'off');
             set(findobj(gcf, 'userdata', 'coreg'), 'enable', 'off');
-        else,
+        else
             set(findobj(gcf, 'tag', 'headstr'), 'string', 'Head model file');
             set(findobj(gcf, 'tag', 'mristr'),  'string', 'MRI file');
             set(findobj(gcf, 'tag', 'chanstr'), 'string', 'Model template channel locations file');
             set(findobj(gcf, 'tag', 'manualcoreg'), 'enable', 'on');
             set(findobj(gcf, 'userdata', 'coreg'), 'enable', 'on');
-        end;
+        end
         tmpl = tmpdat(tmpval).coord_transform;
         set(findobj(gcf, 'tag', 'coregtext'), 'string', '');
         set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
-        [allkeywordstrue transform] = lookupchantemplate(chanfile, tmpl);
-        if allkeywordstrue,
+        [allkeywordstrue, transform] = lookupchantemplate(chanfile, tmpl);
+        if allkeywordstrue
             set(findobj(gcf, 'tag', 'coregtext'), 'string', char(vararg2str({ transform })));
             if isempty(transform)
                  set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 1);
             else set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
-            end;
-        end;
+            end
+        end
         return;
-    end;
+    end
     
     % detect DIPFIT1.0x structure
     % ---------------------------
@@ -130,7 +130,7 @@ if nargin < 2
                 'In either case, a new dipole model can be constructed.' ];
         
         tmpButtonName=questdlg2( strmultiline(str, 60), 'Old DIPFIT structure', 'Keep', 'Erase', 'Keep');
-        if strcmpi(tmpButtonName, 'Keep'), return; end;       
+        if strcmpi(tmpButtonName, 'Keep'), return; end    
 
     elseif isfield(EEG.dipfit, 'hdmfile')
         % detect previous DIPFIT structure
@@ -138,8 +138,8 @@ if nargin < 2
         str = [ 'Dipole information and settings are present in the dataset. ' ...
                 'Keep or erase this information?' ];
         tmpButtonName=questdlg2( strmultiline(str, 60), 'Old DIPFIT structure', 'Keep', 'Erase', 'Keep');
-        if strcmpi(tmpButtonName, 'Keep'), return; end;       
-    end;    
+        if strcmpi(tmpButtonName, 'Keep'), return; end     
+    end    
     
     % define the callbacks for the buttons
     % -------------------------------------
@@ -169,9 +169,9 @@ if nargin < 2
     valmodel    = 2; % default model now MNI
     userdata    = [];
     if isfield(EEG.chaninfo, 'filename')
-        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end;
-        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard_1005')),        valmodel = 2; end;
-    end;
+        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end
+        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard_1005')),        valmodel = 2; end
+    end
    
     geomvert = [3 1 1 1 1 1 1 1 1 1 1];
     
@@ -266,11 +266,11 @@ if nargin < 2
                   'title', 'Dipole fit settings - pop_dipfit_settings()', ...
                   'userdata', userdata, 'geomvert', geomvert 'eval' 'pop_dipfit_settings(''setmodel'');' };
 	[result, userdat2, strhalt, outstruct] = inputgui( optiongui{:});
-    if isempty(result), return; end;
+    if isempty(result), return; end
     
     if test_wrong_parameters(outstruct)
     	return;
-    end;
+    end
 
     % decode GUI inputs
     % -----------------
@@ -306,11 +306,11 @@ if ~isempty(g.electrodes), OUTEEG.dipfit.chansel = g.electrodes; end;
 
 % removing channels with no coordinates
 % -------------------------------------
-[tmpeloc labels Th Rd indices] = readlocs(EEG.chanlocs);
+[tmpeloc, labels, Th, Rd, indices] = readlocs(EEG.chanlocs);
 if length(indices) < length(EEG.chanlocs)
     disp('Warning: Channels removed from dipole fitting no longer have location coordinates!');
     OUTEEG.dipfit.chansel = intersect( OUTEEG.dipfit.chansel, indices);
-end;
+end
 
 % checking electrode configuration
 % --------------------------------
@@ -325,7 +325,7 @@ if 0
             disp('Check for inconsistency in dipole info.');
         else
             disp('Results using standard BEM model are INACCURATE when the chan locations are not on the head surface!');
-        end;
+        end
     else % common channels: performing best transformation
         TMP = OUTEEG;
         elec1 = eeglab2fieldtrip(TMP, 'elec');
@@ -340,13 +340,13 @@ if 0
     
         % convert back to EEGLAB format
         OUTEEG.chanlocs = struct( 'labels', elec3.label, ...
-                              'X'     , mat2cell(elec3.pnt(:,1)'), ...
-                              'Y'     , mat2cell(elec3.pnt(:,2)'), ...
-                              'Z'     , mat2cell(elec3.pnt(:,3)') );
+                              'X'     , mat2cell(elec3.elecpos(:,1)'), ...
+                              'Y'     , mat2cell(elec3.elecpos(:,2)'), ...
+                              'Z'     , mat2cell(elec3.elecpos(:,3)') );
         OUTEEG.chanlocs = convertlocs(OUTEEG.chanlocs, 'cart2all');
-    end;
+    end
     
-end;
+end
 
 com = sprintf('EEG = pop_dipfit_settings( EEG, %s);', vararg2str(options));
 
@@ -359,11 +359,11 @@ function bool = test_wrong_parameters(result)
     meg    = result.coord; 
     
     bool = 0;
-    if meg == 3, return; end;
-    if coreg2 == 0 & isempty(coreg1)
+    if meg == 3, return; end
+    if coreg2 == 0 && isempty(coreg1)
          bool = 1; warndlg2(strvcat('INCORRECT SETTINGS - SELECT THIS MENU AGAIN', ...
                                     'You must co-register your channel locations', ...
                                     'with the head model (Press button, "Manual Co-Reg".', ...
                                     'and follow instructions); To bypass co-registration,', ...
                                     'check the checkbox " No Co-Reg".'), 'Error');
-    end;
+    end
