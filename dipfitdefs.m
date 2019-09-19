@@ -68,7 +68,7 @@ else
 end
 try
     delim  = folder(end);
-    template_models(1).name     = 'Spherical Four-Shell (BESA)';
+    template_models(1).name     = 'Template Spherical Four-Shell (BESA)';
     template_models(1).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_BESA.mat');
     template_models(1).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
     template_models(1).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
@@ -82,7 +82,7 @@ try
     template_models(1).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
     template_models(1).coord_transform(4).keywords  = { 'egi' 'elp' };
 
-    template_models(2).name     = 'Boundary Element Model (MNI)';
+    template_models(2).name     = 'Template Boundary Element Model (MNI)';
     template_models(2).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
     template_models(2).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
     template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
@@ -96,7 +96,7 @@ try
     template_models(2).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
     template_models(2).coord_transform(4).keywords  = { 'egi' 'elp' };
     
-    template_models(3).name     = 'Spherical Four-Shell (custom conductances - see DIPFIT wiki)';
+    template_models(3).name     = 'Template Spherical Four-Shell (custom conductances - see DIPFIT wiki)';
     template_models(3).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_SCCN.mat');
     template_models(3).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
     template_models(3).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
@@ -110,7 +110,7 @@ try
     template_models(3).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
     template_models(3).coord_transform(4).keywords  = { 'egi' 'elp' };
     
-    template_models(4).name     = 'Boundary Element Model (custom conductances - see DIPFIT wiki)';
+    template_models(4).name     = 'Template Boundary Element Model (custom conductances - see DIPFIT wiki)';
     template_models(4).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol_SCCN.mat' );
     template_models(4).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
     template_models(4).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
@@ -133,7 +133,7 @@ end
 
 template_models(5).name        = 'CTF MEG';
 template_models(5).coordformat = 'CTF';
-template_models(6).name        = 'Custom model files';
+template_models(6).name        = 'Custom model files from other template or individual subject';
 template_models(6).coordformat = 'MNI'; % custom model
 
 % constrain electrode to sphere
