@@ -56,7 +56,6 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     % 'export'       -> File > export
     % 'tools'        -> tools menu
     % 'plot'         -> plot menu
-    lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
 
     % command to check that the '.source' is present in the EEG structure 
     % -------------------------------------------------------------------
@@ -80,7 +79,8 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     % create menus
     % ------------
     submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'difpit', 'userdata', 'startup:off');
-    if lightMenuFlag, set(submenu, 'position', 14); end
+    lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
+    if lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
     uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting);
     uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch);
     uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit);
