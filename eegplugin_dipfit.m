@@ -80,7 +80,7 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     % ------------
     submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'difpit', 'userdata', 'startup:off');
     lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
-    if lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
+    if ~isdeployed && lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
     uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting);
     uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch);
     uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit);
