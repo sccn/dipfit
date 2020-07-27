@@ -152,4 +152,4 @@ end
 
 %% history
 disp('Done');
-com = sprintf('EEG = pop_dipfit_loreta(EEG, %s);', vararg2str( { select }));
+com = sprintf('pop_dipfit_loreta(EEG, %s);', vararg2str( { select }));
