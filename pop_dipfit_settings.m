@@ -124,7 +124,7 @@ if nargin < 2
     
     % detect DIPFIT1.0x structure
     % ---------------------------
-    if isfield(EEG.dipfit, 'vol')
+    if isfield(EEG(1).dipfit, 'vol')
         str = [ 'Dipole information structure from DIPFIT v1.02 detected.' ...
                 'Keep or erase the old dipole information including dipole locations? ' ...
                 'In either case, a new dipole model can be constructed.' ];
@@ -132,7 +132,7 @@ if nargin < 2
         tmpButtonName=questdlg2( strmultiline(str, 60), 'Old DIPFIT structure', 'Keep', 'Erase', 'Keep');
         if strcmpi(tmpButtonName, 'Keep'), return; end    
 
-    elseif isfield(EEG.dipfit, 'hdmfile')
+    elseif isfield(EEG(1).dipfit, 'hdmfile')
         % detect previous DIPFIT structure
         % --------------------------------
         str = [ 'Dipole information and settings are present in the dataset. ' ...
@@ -143,10 +143,10 @@ if nargin < 2
     
     % define the callbacks for the buttons
     % -------------------------------------
-    cb_selectelectrodes = [ 'tmplocs = EEG.chanlocs; tmp = select_channel_list({tmplocs.label}, ' ...
+    cb_selectelectrodes = [ 'tmplocs = EEG(1).chanlocs; tmp = select_channel_list({tmplocs.label}, ' ...
                             'eval(get(findobj(gcbf, ''tag'', ''elec''), ''string'')));' ...
                             'set(findobj(gcbf, ''tag'', ''elec''), ''string'',[''[''  num2str(tmp) '']'']); clear tmplocs;' ]; % did not work
-    cb_selectelectrodes = 'tmplocs = EEG.chanlocs; set(findobj(gcbf, ''tag'', ''elec''), ''string'', int2str(pop_chansel({tmplocs.labels}))); clear tmplocs;';
+    cb_selectelectrodes = 'tmplocs = EEG(1).chanlocs; set(findobj(gcbf, ''tag'', ''elec''), ''string'', int2str(pop_chansel({tmplocs.labels}))); clear tmplocs;';
     cb_volmodel = [ 'tmpdat = get(gcbf, ''userdata'');' ... 
                     'tmpind = get(gcbo, ''value'');' ... 
                     'set(findobj(gcbf, ''tag'', ''radii''),   ''string'', num2str(tmpdat{tmpind}.r,3));' ...
@@ -168,9 +168,9 @@ if nargin < 2
     %                'end;' ];
     valmodel    = 2; % default model now MNI
     userdata    = [];
-    if isfield(EEG.chaninfo, 'filename')
-        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end
-        if ~isempty(findstr(lower(EEG.chaninfo.filename), 'standard_1005')),        valmodel = 2; end
+    if isfield(EEG(1).chaninfo, 'filename')
+        if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end
+        if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard_1005')),        valmodel = 2; end
     end
    
     geomvert = [1 1 1 1 1 1 1 1];
@@ -243,7 +243,7 @@ if nargin < 2
         { } ...
         { 'style' 'text'        'string' 'Matrix to align chan. locs. with head model' 'userdata' 'coreg' } ...
         { 'style' 'edit'        'string' '' 'tag' 'coregtext' 'userdata' 'coreg' } ...
-        { 'style' 'pushbutton'  'string' 'Co-register' 'fontweight' 'bold' 'tag' 'manualcoreg' 'callback' cb_selectcoreg 'userdata' { EEG.chanlocs,EEG.chaninfo } } ... 
+        { 'style' 'pushbutton'  'string' 'Co-register' 'fontweight' 'bold' 'tag' 'manualcoreg' 'callback' cb_selectcoreg 'userdata' { EEG(1).chanlocs,EEG(1).chaninfo } } ... 
         { 'style' 'checkbox'    'string' 'No Co-Reg.'    'tag' 'coregcheckbox' 'value' 0  'userdata' 'coreg' } ... 
         { 'style' 'text'        'string' 'Channels to omit from dipole fitting' } ...
         { 'style' 'edit'        'string' ''             'tag' 'elec' } ...
@@ -253,8 +253,8 @@ if nargin < 2
     % plot GUI and protect parameters
     % -------------------------------
     userdata.template_models  = template_models;
-    if isfield(EEG.chaninfo, 'filename')
-         userdata.chanfile         = lower(EEG.chaninfo.filename);
+    if isfield(EEG(1).chaninfo, 'filename')
+         userdata.chanfile         = lower(EEG(1).chaninfo.filename);
     else userdata.chanfile         = '';
     end
     optiongui = { 'geometry', geomhorz, 'uilist', elements, 'helpcom', 'pophelp(''pop_dipfit_settings'')', ...
@@ -275,10 +275,21 @@ if nargin < 2
     options = { options{:} 'mrifile'      result{4} };
     options = { options{:} 'chanfile'     result{5} };
     if ~result{7}, options = { options{:} 'coord_transform' str2num(result{6}) }; end
-    options = { options{:} 'chansel'      setdiff(1:EEG.nbchan, str2num(result{8})) };
+    options = { options{:} 'chansel'      setdiff(1:EEG(1).nbchan, str2num(result{8})) };
 
 else
     options = varargin;
+end
+
+% process multiple datasets
+% -------------------------
+if length(EEG) > 1
+    if nargin < 2
+        [ OUTEEG, com ] = eeg_eval( 'pop_dipfit_settings', EEG, 'warning', 'on', 'params', options );
+    else
+        [ OUTEEG, com ] = eeg_eval( 'pop_dipfit_settings', EEG, 'params', options );
+    end
+    return;
 end
 
 g = finputcheck(options, { 'hdmfile'  'string'    []         '';

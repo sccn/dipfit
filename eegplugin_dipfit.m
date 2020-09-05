@@ -41,7 +41,7 @@
 
 function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
-    vers = 'dipfit3.3';
+    vers = 'dipfit3.4';
     if nargin < 3
         error('eegplugin_dipfit requires 3 arguments');
     end
@@ -59,15 +59,15 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
 
     % command to check that the '.source' is present in the EEG structure 
     % -------------------------------------------------------------------
-    check_dipfit = [trystrs.no_check 'if ~isfield(EEG, ''dipfit''), error(''Run the dipole setting first''); end;'  ...
-                    'if isempty(EEG.dipfit), error(''Run the dipole setting first''); end;'  ];
+    check_dipfit = [trystrs.no_check 'if ~isfield(EEG(1), ''dipfit''), error(''Run the dipole setting first''); end;'  ...
+                    'if isempty(EEG(1).dipfit), error(''Run the dipole setting first''); end;'  ];
     check_dipfitnocheck = [ trystrs.no_check 'if ~isfield(EEG, ''dipfit''), error(''Run the dipole setting first''); end; ' ];
-    check_chans = [ '[EEG tmpres] = eeg_checkset(EEG, ''chanlocs_homogeneous'');' ...
+    check_chans = [ '[EEG,tmpres] = eeg_checkset(EEG, ''chanlocs_homogeneous'');' ...
                        'if ~isempty(tmpres), eegh(tmpres), end; clear tmpres;' ];
     
     % menu callback commands
     % ----------------------
-    comsetting = [ trystrs.check_ica check_chans '[EEG LASTCOM]=pop_dipfit_settings(EEG);'    catchstrs.store_and_hist ]; 
+    comsetting = [ trystrs.check_data check_chans '[EEG LASTCOM]=pop_dipfit_settings(EEG);'    catchstrs.store_and_hist ]; 
     combatch   = [ check_dipfit check_chans  '[EEG LASTCOM] = pop_dipfit_gridsearch(EEG);'    catchstrs.store_and_hist ];
     comfit     = [ check_dipfitnocheck check_chans [ 'EEG = pop_dipfit_nonlinear(EEG); ' ...
                         'LASTCOM = ''% === History not supported for manual dipole fitting ==='';' ]  catchstrs.store_and_hist ];
@@ -78,12 +78,12 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
     % create menus
     % ------------
-    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'difpit', 'userdata', 'startup:off');
+    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'difpit', 'userdata', 'startup:off;study:on');
     lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
     if ~isdeployed && lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
-    uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting);
-    uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch);
-    uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit);
-    uimenu( submenu, 'Label', 'Autofit (coarse fit, fine fit & plot)', 'CallBack', comauto);
-    uimenu( submenu, 'Label', 'Locate components using eLoreta', 'CallBack', comloreta);
-    uimenu( submenu, 'Label', 'Plot component dipoles'   , 'CallBack', complot, 'separator', 'on');
+    uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting, 'userdata', 'startup:off;study:on');
+    uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch, 'userdata', 'startup:off');
+    uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit, 'userdata', 'startup:off');
+    uimenu( submenu, 'Label', 'Autofit (coarse fit, fine fit & plot)', 'CallBack', comauto, 'userdata', 'startup:off;study:on');
+    uimenu( submenu, 'Label', 'Locate components using eLoreta', 'CallBack', comloreta, 'userdata', 'startup:off');
+    uimenu( submenu, 'Label', 'Plot component dipoles'   , 'CallBack', complot, 'separator', 'on', 'userdata', 'startup:off');

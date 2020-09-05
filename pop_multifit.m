@@ -42,57 +42,72 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function [EEG, com] = pop_multifit(EEG, comps, varargin);
+function [EEG, com] = pop_multifit(EEG, comps, varargin)
     
     if nargin < 1
         help pop_multifit;
         return;
-    end;
+    end
     
     com = [];
-    ncomps = size(EEG.icaweights,1);
-    if ncomps == 0, error('you must run ICA first'); end;
+    ncomps = size(EEG(1).icaweights,1);
+    if ncomps == 0, error('you must run ICA first'); end
 
     if nargin<2
-        cb_chans = 'tmplocs = EEG.chanlocs; set(findobj(gcbf, ''tag'', ''chans''), ''string'', int2str(pop_chansel({tmplocs.labels}))); clear tmplocs;';
+        cb_chans = 'tmplocs = EEG(1).chanlocs; set(findobj(gcbf, ''tag'', ''chans''), ''string'', int2str(pop_chansel({tmplocs.labels}))); clear tmplocs;';
+        cb_plot = ...
+            [ 'if get(gcbo, ''value''),' ...
+            '    set(findobj(gcbf, ''userdata'', ''plot''), ''enable'', ''on'');' ...
+            'else,' ...
+            '    set(findobj(gcbf, ''userdata'', ''plot''), ''enable'', ''off'');' ...
+            'end;' ];
         
-        uilist = { { 'style' 'text' 'string' 'Component indices' } ...
-                   { 'style' 'edit' 'string' [ '1:' int2str(ncomps) ] } ... 
+        uilist = { { 'style' 'text' 'string' 'Component indices (default:all)' } ...
+                   { 'style' 'edit' 'string' [ '' ] } ... 
                     { 'style' 'text' 'string' 'Rejection threshold RV (%)' } ...
                    { 'style' 'edit' 'string' '100' } ... 
-                   { 'style' 'text' 'string' 'Remove dipoles outside the head' } ...
-                   { 'style' 'checkbox' 'string' '' 'value' 0 } {} ...
-                   { 'style' 'text' 'string' 'Fit bilateral dipoles (check)' } ...
-                   { 'style' 'checkbox' 'string' '' 'value' 0 } {} ...
-                   { 'style' 'text' 'string' 'Plot resulting dipoles (check)' } ...
-                   { 'style' 'checkbox' 'string' '' 'value' 0 } {} ...
-                   { 'style' 'text' 'string' 'dipplot() plotting options' } ...
-                   { 'style' 'edit' 'string' '''normlen'' ''on''' } ...
-                   { 'style' 'pushbutton' 'string' 'Help' 'callback' 'pophelp(''dipplot'')' } }; 
+                   { 'style' 'checkbox' 'string' 'Remove dipoles outside the head' 'value' 0 } ...
+                   { 'style' 'checkbox' 'string' 'Fit bilateral dipoles (check)' 'value' 0 } ...
+                   { 'style' 'checkbox' 'string' 'Plot resulting dipoles using dipplot (check)' 'value' 0 'callback', cb_plot, 'enable', fastif(length(EEG)>1, 'off', 'on') } ...
+                   {} { 'style' 'text' 'string' 'plotting options' 'userdata' 'plot' 'enable' 'off'} ...
+                   { 'style' 'edit' 'string' '''normlen'' ''on''' 'userdata' 'plot' 'enable' 'off' } ...
+                   { 'style' 'pushbutton' 'string' 'Help' 'callback' 'pophelp(''dipplot'')' 'userdata' 'plot' 'enable' 'off' } }; 
 
-        results = inputgui( { [1.91 2.8] [1.91 2.8] [3.1 0.8 1.6] [3.1 0.8 1.6] [3.1 0.8 1.6] [2.12 2.2 0.8]}, ...
+        results = inputgui( { [1.91 1] [1.91 1] 1 1 1 [0.5 1.5 1.5 0.8]}, ...
                             uilist, 'pophelp(''pop_multifit'')', ...
                             'Fit multiple ICA components -- pop_multifit()');
-        if length(results) == 0 return; end;
-        comps        = eval( [ '[' results{1} ']' ] );
+        if length(results) == 0 return; end
+        comps = eval( [ '[' results{1} ']' ] );
         
         % selecting model
         % ---------------
         options = {};
          if ~isempty(results{2})
             options      = { options{:} 'threshold' eval( results{2} ) };
-        end;
-        if results{3}, options = { options{:} 'rmout' 'on' }; end;
-        if results{4}, options = { options{:} 'dipoles' 2 }; end;
-        if results{5}, options = { options{:} 'dipplot' 'on' }; end;
+        end
+        if results{3}, options = { options{:} 'rmout' 'on' }; end
+        if results{4}, options = { options{:} 'dipoles' 2 }; end
+        if results{5}, options = { options{:} 'dipplot' 'on' }; end
         options = { options{:} 'plotopt' eval( [ '{ ' results{6} ' }' ]) };
     else 
         options = varargin;
-    end;
+    end
+    
+    % process multiple datasets
+    % -------------------------
+    if length(EEG) > 1
+        % check that the dipfit settings are the same
+        if nargin < 2
+            [ EEG, com ] = eeg_eval( 'pop_multifit', EEG, 'warning', 'on', 'params', {comps options{:}} );
+        else
+            [ EEG, com ] = eeg_eval( 'pop_multifit', EEG, 'params', {comps options{:}} );
+        end
+        return;
+    end
     
     % checking parameters
     % -------------------
-    if isempty(comps), comps = [1:size(EEG.icaweights,1)]; end;
+    if isempty(comps), comps = [1:size(EEG.icaweights,1)]; end
     g = finputcheck(options, { 'settings'  { 'cell' 'struct' }    []        {};                % deprecated
                                'dipoles'   'integer'  [1 2]      1;
                                'threshold' 'float'    [0 100]   40;
@@ -100,7 +115,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
                                'rmout'     'string'   { 'on' 'off' } 'off';
                                'plotopt'   'cell'     {}        {'normlen' 'on' }});
     
-    if isstr(g), error(g); end;    
+    if isstr(g), error(g); end    
     EEG     = eeg_checkset(EEG, 'chanlocs_homogeneous');
     
     % dipfit settings
@@ -109,7 +124,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
         EEG.dipfit = g.settings;
     elseif ~isempty(g.settings)
         EEG = pop_dipfit_settings( EEG, g.settings{:}); % will probably not work but who knows
-    end;
+    end
             
     % Scanning dipole locations
     % -------------------------
@@ -120,9 +135,9 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
         if length(alls) == ncomps
             if all(alls == 3)
                 skipscan = 1;
-            end;
-        end;
-    catch, end;
+            end
+        end
+    catch, end
     if skipscan
         disp('Skipping scanning since all dipoles have non-null starting positions.');
     else
@@ -133,7 +148,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
         EEG = pop_dipfit_gridsearch( EEG, [1:ncomps], ...
                                 eval(xgridstr), eval(ygridstr), eval(zgridstr), 100);
         disp('Scanning terminated. Refining dipole locations...');
-    end;
+    end
    
     % set symmetry constraint
     % ----------------------
@@ -141,7 +156,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
         defaultconstraint = 'x';
     else
         defaultconstraint = 'y';
-    end;
+    end
     
     % Searching dipole localization
     % -----------------------------
@@ -150,8 +165,8 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
     %elc     = getelecpos(EEG.chanlocs, EEG.dipfit);
     plotcomps = [];
     for i = comps(:)'
-        if i <= length(EEG.dipfit.model) & ~isempty(EEG.dipfit.model(i).posxyz)
-            if g.dipoles == 2,
+        if i <= length(EEG.dipfit.model) && ~isempty(EEG.dipfit.model(i).posxyz)
+            if g.dipoles == 2
                 % try to find a good origin for automatic dipole localization
                 EEG.dipfit.model(i).active = [1 2];
                 EEG.dipfit.model(i).select = [1 2];
@@ -163,26 +178,26 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
                     if strcmpi(EEG.dipfit.coordformat, 'MNI')
                          EEG.dipfit.model(i).posxyz(:,1) = [-40;40];
                     else EEG.dipfit.model(i).posxyz(:,2) = [-40;40];
-                    end;
+                    end
                     EEG.dipfit.model(i).momxyz(2,:) = EEG.dipfit.model(i).momxyz;
-                end;
+                end
             else 
                 EEG.dipfit.model(i).active = [1];
                 EEG.dipfit.model(i).select = [1];
-            end;
+            end
             warning backtrace off;
-            try,
-                if g.dipoles == 2,
+            try
+                if g.dipoles == 2
                     EEG = dipfit_nonlinear(EEG, 'component', i, 'symmetry', defaultconstraint);
                 else
                     EEG = dipfit_nonlinear(EEG, 'component', i, 'symmetry', []);
-                end;
+                end
             catch, EEG.dipfit.model(i).rv = NaN; disp('Maximum number of iterations reached. Fitting failed');
-            end;
+            end
             warning backtrace on;
             plotcomps = [ plotcomps i ];
-        end;
-    end;
+        end
+    end
     
     % set RV to 1 for dipole with higher than 40% residual variance
     % -------------------------------------------------------------
@@ -190,7 +205,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
 
     % removing dipoles outside the head
     % ---------------------------------
-    if strcmpi(g.rmout, 'on') & strcmpi(EEG.dipfit.coordformat, 'spherical')
+    if strcmpi(g.rmout, 'on') && strcmpi(EEG.dipfit.coordformat, 'spherical')
         rmdip = [];
         for index = plotcomps
             if ~isempty(EEG.dipfit.model(index).posxyz)
@@ -199,34 +214,34 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin);
                     EEG.dipfit.model(index).posxyz = [];
                     EEG.dipfit.model(index).momxyz = [];
                     EEG.dipfit.model(index).rv     = 1;
-                end;
-            end;
-        end;
+                end
+            end
+        end
         plotcomps = setdiff(plotcomps, rmdip);
         if length(rmdip) > 0
             fprintf('%d out of cortex dipoles removed (usually artifacts)\n', length(rmdip));
-        end;
-    end;
+        end
+    end
     
     % plotting dipoles
     % ----------------
     if strcmpi(g.dipplot, 'on')
         pop_dipplot(EEG, 'DIPFIT', plotcomps, g.plotopt{:});
-    end;
+    end
     
     com = sprintf('EEG = pop_multifit(EEG, %s);', vararg2str({ comps options{:}}));
     return;
     
 % get electrode positions from eeglag
 % -----------------------------------
-function elc = getelecpos(chanlocs, dipfitstruct);
-    try,
+function elc = getelecpos(chanlocs, dipfitstruct)
+    try
         elc = [ [chanlocs.X]' [chanlocs.Y]' [chanlocs.Z]' ];
     catch
         disp('No 3-D carthesian coordinates; re-computing them from 2-D polar coordinates');
         EEG.chanlocs = convertlocs(EEG.chanlocs, 'topo2all');
         elc = [ [chanlocs.X]' [chanlocs.Y]' [chanlocs.Z]' ];
-    end;
+    end
     % constrain electrode to sphere
     % -----------------------------
     disp('Constraining electrodes to sphere');
@@ -237,7 +252,7 @@ function elc = getelecpos(chanlocs, dipfitstruct);
 
     %for index= 1:size(elc,1)
     %    elc(index,:) = max(dipfitstruct.vol.r) * elc(index,:) /norm(elc(index,:));
-    %end;
+    %end
 
 
     

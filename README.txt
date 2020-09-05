@@ -1,3 +1,6 @@
+v3.4
+- Adding possiblity to run DIPFIT on EEGLAB STUDY
+
 v3.3
 - Ensures backward compatiblity with old versions of EEGLAB
 
