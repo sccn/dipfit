@@ -53,14 +53,17 @@ if ~isfield(EEG, 'icawinv')
 end
         
 if ~isfield(EEG, 'dipfit')
-    error('General dipolefit settings not specified');
+    error('General dipole fit settings not specified');
 end
 
 if ~isfield(EEG.dipfit, 'vol') && ~isfield(EEG.dipfit, 'hdmfile')
     error('Dipolefit volume conductor model not specified');
 end
+if ~isfield(EEG.dipfit, 'coordformat') || ~strcmpi(EEG.dipfit.coordformat, 'MNI')
+    error('For this function, you must use the template BEM model MNI in dipole fit settings');
+end
 
-dipfitdefs
+dipfitdefs;
 if nargin < 2
      uilist = { { 'style' 'text'        'string'  [ 'Enter indices of components ' 10 '(one figure generated per component)'] } ...
                 { 'style' 'edit'        'string'  '1' } ...
