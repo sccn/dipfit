@@ -1,5 +1,8 @@
 Version history
 =====
+v3.6
+- Fix menu tag so the ERPSOURCE plugin can find the DIPFIT menu item
+
 v3.5
 - Use correct MRI for multifit, reorder menus
 

@@ -41,7 +41,7 @@
 
 function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
-    vers = 'dipfit3.5';
+    vers = 'dipfit3.6';
     if nargin < 3
         error('eegplugin_dipfit requires 3 arguments');
     end
@@ -78,7 +78,7 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
     % create menus
     % ------------
-    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'difpit', 'userdata', 'startup:off;study:on');
+    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'dipfit', 'userdata', 'startup:off;study:on');
     lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
     if ~isdeployed && lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
     uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting, 'userdata', 'startup:off;study:on');
