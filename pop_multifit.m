@@ -222,6 +222,10 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin)
             fprintf('%d out of cortex dipoles removed (usually artifacts)\n', length(rmdip));
         end
     end
+    if strcmpi(g.rmout, 'on') & ~strcmpi(EEG.dipfit.coordformat, 'spherical')
+		    warning(['Dipoles outside of head not removed, this can only be done'...
+		      ' when using the spherical head model'])
+	  end
     
     % plotting dipoles
     % ----------------
