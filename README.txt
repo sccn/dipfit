@@ -1,5 +1,8 @@
 Version history
 =====
+v3.7
+- Better compatibility with compiled version of EEGLAB
+
 v3.6
 - Fix menu tag so the ERPSOURCE plugin can find the DIPFIT menu item
 
