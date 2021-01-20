@@ -60,12 +60,8 @@ defaultvolume.o = [0 0 0];
 
 % default file locations 
 % ----------------------
-if ~iseeglabdeployed
-    folder = which('pop_dipfit_settings');
-    folder = folder(1:end-21);
-else
-    folder = fullfile(ctfroot, 'EEGLAB', 'plugins', 'dipfit');
-end
+%#function pop_dipfit_settings
+folder = fileparts(which('pop_dipfit_settings'));
 try
     delim  = folder(end);
     template_models(1).name     = 'Template Spherical Four-Shell (BESA)';
