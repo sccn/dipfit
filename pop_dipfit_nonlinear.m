@@ -134,17 +134,17 @@ elseif nargin==1
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   % define the callback functions for the interface elements
-  cb_plotmap         = 'pop_dipfit_nonlinear(EEG, ''dialog_plotmap'', gcbf);';
-  cb_selectcomponent = 'pop_dipfit_nonlinear(EEG, ''dialog_selectcomponent'', gcbf);';
-  cb_checkinput      = 'pop_dipfit_nonlinear(EEG, ''dialog_checkinput'', gcbf);';
-  cb_fitposition     = 'pop_dipfit_nonlinear(EEG, ''dialog_getvalue'', gcbf); pop_dipfit_nonlinear(EEG, ''dipfit_position'', gcbf); pop_dipfit_nonlinear(EEG, ''dialog_setvalue'', gcbf);';
-  cb_fitmoment       = 'pop_dipfit_nonlinear(EEG, ''dialog_getvalue'', gcbf); pop_dipfit_nonlinear(EEG, ''dipfit_moment''  , gcbf); pop_dipfit_nonlinear(EEG, ''dialog_setvalue'', gcbf);';
+  cb_plotmap         = 'pop_dipfit_nonlinear([], ''dialog_plotmap'', gcbf);';
+  cb_selectcomponent = 'pop_dipfit_nonlinear([], ''dialog_selectcomponent'', gcbf);';
+  cb_checkinput      = 'pop_dipfit_nonlinear([], ''dialog_checkinput'', gcbf);';
+  cb_fitposition     = 'pop_dipfit_nonlinear([], ''dialog_getvalue'', gcbf); pop_dipfit_nonlinear([], ''dipfit_position'', gcbf); pop_dipfit_nonlinear([], ''dialog_setvalue'', gcbf);';
+  cb_fitmoment       = 'pop_dipfit_nonlinear([], ''dialog_getvalue'', gcbf); pop_dipfit_nonlinear([], ''dipfit_moment''  , gcbf); pop_dipfit_nonlinear([], ''dialog_setvalue'', gcbf);';
   cb_close           = 'close(gcbf)';
   cb_help            = 'pophelp(''pop_dipfit_nonlinear'');';
   cb_ok              = 'uiresume(gcbf);'; 
-  cb_plotdip         = 'pop_dipfit_nonlinear(EEG, ''dialog_plotcomponent'', gcbf);';
-  cb_flip1           = 'pop_dipfit_nonlinear(EEG, ''dialog_flip'', gcbf, 1);';
-  cb_flip2           = 'pop_dipfit_nonlinear(EEG, ''dialog_flip'', gcbf, 2);';
+  cb_plotdip         = 'pop_dipfit_nonlinear([], ''dialog_plotcomponent'', gcbf);';
+  cb_flip1           = 'pop_dipfit_nonlinear([], ''dialog_flip'', gcbf, 1);';
+  cb_flip2           = 'pop_dipfit_nonlinear([], ''dialog_flip'', gcbf, 2);';
   cb_sym             = [ 'set(findobj(gcbf, ''tag'', ''dip2sel''), ''value'', 1);' cb_checkinput ];
   
   % vertical layout for each line 
@@ -177,7 +177,7 @@ elseif nargin==1
       { 'style' 'text'    'string' 'moment'     } ...
       { } ...
       ...
-      { 'style' 'text'        'string' '#1' 'tag' 'dip1'                                 } ...
+      { 'style' 'text'        'string' '1' 'tag' 'dip1'                                 } ...
       { 'style' 'checkbox'    'string' ''   'tag' 'dip1sel'    'callback' cb_checkinput  } { } ...
       { 'style' 'edit'        'string' ''   'tag' 'dip1pos'    'callback' cb_checkinput  } ...
       { 'style' 'edit'        'string' ''   'tag' 'dip1mom'    'callback' cb_checkinput  } ...
@@ -210,10 +210,10 @@ elseif nargin==1
     };
   
   % activate the graphical interface
-  supergui(0, geomhoriz, geomvert, elements{:});
-  dlg = gcf;
-  set(gcf, 'name', 'Manual dipole fit -- pop_dipfit_nonlinear()');
-  set(gcf, 'userdata', EEG);
+  dlg = figure('visible', 'off');  
+  supergui(dlg, geomhoriz, geomvert, elements{:});
+  set(dlg, 'name', 'Manual dipole fit -- pop_dipfit_nonlinear()');
+  set(dlg, 'userdata', EEG);
   pop_dipfit_nonlinear(EEG, 'dialog_setvalue', dlg);
   uiwait(dlg);
   if ishandle(dlg)
@@ -293,7 +293,7 @@ elseif nargin>=3
       
     case 'dialog_setvalue'
       % synchronize the gui with the data
-      set(findobj(parent, 'tag', 'component'), 'string', EEG.dipfit.current);
+      set(findobj(parent, 'tag', 'component'), 'string', int2str(EEG.dipfit.current));
       set(findobj(parent, 'tag', 'relvar' ), 'string', sprintf('%0.2f%%', EEG.dipfit.model(EEG.dipfit.current).rv * 100));
       set(findobj(parent, 'tag', 'dip1sel'), 'value', ismember(1, EEG.dipfit.model(EEG.dipfit.current).select));
       set(findobj(parent, 'tag', 'dip2sel'), 'value', ismember(2, EEG.dipfit.model(EEG.dipfit.current).select));
