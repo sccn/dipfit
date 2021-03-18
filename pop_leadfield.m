@@ -61,9 +61,61 @@
 
 function [EEG,com] = pop_leadfield(EEG, varargin)
 
+% define source models
+p  = fileparts(which('eeglab.m'));
+roi(1).label = 'Surface source model: Colin27 (with Desikan-Kilianny atlas)';
+roi(1).file  = fullfile( p, 'functions', 'supportfiles', 'head_modelColin27_5003_Standard-10-5-Cap339.mat');
+roi(1).align = [0 -24 -45 0 0 -1.5707963 1000 1000 1000];
+roi(1).enable = 'off';
+roi(1).scale  = NaN;
+roi(1).atlasliststr = { 'Desikan-Kiliany (68 ROIs)' };
+roi(1).atlaslist    = { 'Desikan-Kiliany' };
+roi(1).atlasind  = 1;
+
+p  = fileparts(which('pop_roi_activity.m'));
+roi(2).label = 'Surface source model: Use Brainstorm ICBM152 (with Desikan-Kilianny atlas)';
+roi(2).file  = fullfile(p, 'tess_cortex_mid_low_2000V.mat');
+roi(2).align = [0 -24 -45 0 0 -1.5707963000 1000 1000 1000];
+roi(2).enable = 'off';
+roi(2).scale  = NaN;
+[ roi(2).atlasliststr, roi(2).atlaslist] = getatlaslist(roi(2).file);
+roi(2).atlasind  = 2;
+
+roi(3).label = 'Volumetric source model: LORETA-KEY';
+roi(3).file  = fullfile(p, 'LORETA-Talairach-BAs.mat');
+roi(3).align = [];
+roi(3).enable = 'off';
+roi(3).scale  = NaN;
+roi(3).atlasliststr = { 'LORETA-Talairach-BAs (44 x 2 ROIs)' };
+roi(3).atlaslist    = { 'LORETA-Talairach-BAs' };
+roi(3).atlasind  = 1;
+
+p  = fileparts(which('ft_defaults.m'));
+roi(4).label = 'Volumetric source model: AFNI with TTatlas+tlrc atlas (Fieldtrip)';
+roi(4).file  = fullfile(p, 'template','atlas','afni','TTatlas+tlrc.HEAD');
+roi(4).align = [ ];
+roi(4).enable = 'off';
+roi(4).scale  = 4;
+roi(4).atlasliststr = { '' };
+roi(4).atlaslist    = { '' };
+roi(4).atlasind  = 1;
+
+roi(5).label = 'Custom source model';
+roi(5).file  = '';
+roi(5).align = [];
+roi(5).enable = 'on';
+roi(5).scale  = 1;
+roi(5).atlasliststr = { '' };
+roi(5).atlaslist    = { '' };
+roi(5).atlasind     = 1;
+
 com = '';
 if nargin < 1
-    help pop_roi_activity;
+    if nargout > 0
+        EEG = roi;
+    else
+        help pop_roi_activity;
+    end
     return
 end
 
@@ -71,8 +123,9 @@ end
 if ~isstruct(EEG)
     fig = EEG;
     userdat = get(fig, 'userdata');
+    EEG = userdat{5};
     
-    if strcmpi(varargin{1}, 'select3') % atlas
+    if strcmpi(varargin{1}, 'select') % atlas
         usrdat = userdat{3}(get(findobj(gcf, 'tag', 'selection3'), 'value'));
         strAlign = num2str(usrdat.align);
         strAlign = regexprep(strAlign, ' +', '  ');
@@ -88,12 +141,12 @@ if ~isstruct(EEG)
         userdat{4} = usrdat.scale;
         set(gcf, 'userdata', userdat);
         
-    elseif strcmpi(varargin{1}, 'load3') % atlas
+    elseif strcmpi(varargin{1}, 'load') % atlas
         [tmpfilename, tmpfilepath] = uigetfile('*', 'Select a text file');
         if tmpfilename(1) ~=0, set(findobj('parent', gcbf, 'tag', 'strfile3'), 'string', fullfile(tmpfilepath,tmpfilename)); end
         
-    elseif strcmpi(varargin{1}, 'selectcoreg2')
-        plot3dmeshalign(get( findobj(fig, 'tag', 'strfile1'), 'string'), get( findobj(fig, 'tag', 'strfile3'), 'string'), str2num(get( findobj(fig, 'tag', 'transform3'), 'string')));
+    elseif strcmpi(varargin{1}, 'selectcoreg')
+        plot3dmeshalign(EEG.dipfit.hdmfile, get( findobj(fig, 'tag', 'strfile3'), 'string'), str2num(get( findobj(fig, 'tag', 'transform3'), 'string')));
     end
     return
     
@@ -117,83 +170,17 @@ if dipfitOK
 end
 
 if nargin < 2
-    headmodel = [];
     if ~dipfitOK
-        res = warndlg( strvcat( ...
-            'DIPFIT MNI head model not set in one or more datasets. You will not be', ...
-            'able to compute the Leadfield matrix unless you correct this.', ...
-            '(use menu item Tools > Locate Dipoles with DIPFIT > Head model and settings).', ...
-            'To continue, you must have a custom Leadfield matrix file available.'), 'Use DIPFIT Leadfield matrix', 'Continue', 'Go back', 'Go back');
-        if strcmpi(res, 'Go back'), return; end
-    else
-        headmodel(1).label = 'Headmodel: Use DIPFIT current model and conductivities';
-        headmodel(1).file  = EEG(1).dipfit.hdmfile;
-        headmodel(1).align = EEG(1).dipfit.coord_transform;
-        headmodel(1).enable = 'off';
+        warndlg2( strvcat( ...
+            'You need to set DIPFIT to use the MNI head model not set in one or more datasets.', ...
+            ' You will not be able to compute the Leadfield matrix unless you correct this.', ...
+            '(use menu item Tools > Locate Dipoles with DIPFIT > Head model and settings).'), 'Use DIPFIT Leadfield matrix');
+        return
     end
-    
-    leadfield = [];
-    leadfield(end+1).label = 'Leadfield matrix: compute using head and source model above (Fieldtrip)';
-    leadfield(end).enable  = 'off';
-    leadfield(end).file  = '';
-    leadfield(end).headmodel = 1;
-    leadfield(end).sourcemodel = 1;
-    leadfield(end).modelenable = 'on';
-    
-    p  = fileparts(which('eeglab.m'));
-    roi(1).label = 'Surface source model: Colin27 (with Desikan-Kilianny atlas)';
-    roi(1).file  = fullfile( p, 'functions', 'supportfiles', 'head_modelColin27_5003_Standard-10-5-Cap339.mat');
-    roi(1).align = [0 -24 -45 0 0 -1.5707963 1000 1000 1000];
-    roi(1).enable = 'off';
-    roi(1).scale  = NaN;
-    roi(1).atlasliststr = { 'Desikan-Kiliany (68 ROIs)' };
-    roi(1).atlaslist    = { 'Desikan-Kiliany' };
-    roi(1).atlasind  = 1;
-    
-    p  = fileparts(which('pop_roi_activity.m'));
-    roi(2).label = 'Surface source model: Use Brainstorm ICBM152 (with Desikan-Kilianny atlas)';
-    roi(2).file  = fullfile(p, 'tess_cortex_mid_low_2000V.mat');
-    roi(2).align = [0 -24 -45 0 0 -1.5707963000 1000 1000 1000];
-    roi(2).enable = 'off';
-    roi(2).scale  = NaN;
-    [ roi(2).atlasliststr, roi(2).atlaslist] = getatlaslist(roi(2).file);
-    roi(2).atlasind  = 2;
-    
-    roi(3).label = 'Volumetric source model: LORETA-KEY';
-    roi(3).file  = fullfile(p, 'LORETA-Talairach-BAs.mat');
-    roi(3).align = [];
-    roi(3).enable = 'off';
-    roi(3).scale  = NaN;
-    roi(3).atlasliststr = { 'LORETA-Talairach-BAs (44 x 2 ROIs)' };
-    roi(3).atlaslist    = { 'LORETA-Talairach-BAs' };
-    roi(3).atlasind  = 1;
-        
-    p  = fileparts(which('ft_defaults.m'));
-    roi(4).label = 'Volumetric source model: AFNI with TTatlas+tlrc atlas (Fieldtrip)';
-    roi(4).file  = fullfile(p, 'template','atlas','afni','TTatlas+tlrc.HEAD');
-    roi(4).align = [ ];
-    roi(4).enable = 'off';
-    roi(4).scale  = 4;
-    roi(4).atlasliststr = { '' };
-    roi(4).atlaslist    = { '' };
-    roi(4).atlasind  = 1;
 
-    roi(5).label = 'Custom source model';
-    roi(5).file  = '';
-    roi(5).align = [];
-    roi(5).enable = 'on';
-    roi(5).scale  = 1;
-    roi(5).atlasliststr = { '' };
-    roi(5).atlaslist    = { '' };
-    roi(5).atlasind     = 1;
-    
-    cb_select1 = 'pop_leadfield(gcf, ''select1'');';
-    cb_select2 = 'pop_leadfield(gcf, ''select2'');';
-    cb_select3 = 'pop_leadfield(gcf, ''select3'');';
-    cb_load1   = 'pop_leadfield(gcf, ''load1'');';
-    cb_load3   = 'pop_leadfield(gcf, ''load3'');';
-    cb_selectcoreg1 = 'pop_leadfield(gcf, ''selectcoreg1'');';
-    cb_selectcoreg2 = 'pop_leadfield(gcf, ''selectcoreg2'');';
+    cb_select = 'pop_leadfield(gcf, ''select'');';
+    cb_load   = 'pop_leadfield(gcf, ''load'');';
+    cb_selectcoreg = 'pop_leadfield(gcf, ''selectcoreg'');';
     uiToolTip =  ['Volumetric atlases often have million of voxels and ' 10 ...
             'require to be downsampled to a few thousand voxels' 10 ...
             'to be used as source models. This message box does not' 10 ...
@@ -203,9 +190,9 @@ if nargin < 2
     % uigeom = { 1 1 rowg rowg 1 rowg rowg [0.1 0.6 0.9 0.3] 1 rowg 1 [0.5 1 0.35 0.5] [0.5 1 0.35 0.5] [0.5 1 0.35 0.5] [1] [0.9 1.2 1] };
     uigeom = { 1 1 rowg rowg [0.1 0.8 0.2 0.8] };
     uilist = { { 'style' 'text' 'string' 'Choose source model for Leadfield matrix' 'fontweight' 'bold'} ...
-        { 'style' 'popupmenu' 'string' { roi.label }  'tag' 'selection3' 'callback' cb_select3 } ...
-        {} { 'style' 'text' 'string' 'File name'}                       { 'style' 'edit' 'string' 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 'tag' 'strfile3'   'userdata', 'sourcemodel' } { 'style' 'pushbutton' 'string' '...'  'userdata', 'sourcemodel' 'tag' 'push3' 'callback' cb_load3 }  ...
-        {} { 'style' 'text' 'string' 'Transformation to MNI (if any)' } { 'style' 'edit' 'string' 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 'tag' 'transform3' 'userdata', 'sourcemodel' } { 'style' 'pushbutton' 'string' '...'  'userdata', 'sourcemodel' 'callback' cb_selectcoreg2 }  ...
+        { 'style' 'popupmenu' 'string' { roi.label }  'tag' 'selection3' 'value' 3 'callback' cb_select } ...
+        {} { 'style' 'text' 'string' 'File name'}                       { 'style' 'edit' 'string' 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 'tag' 'strfile3'   'userdata', 'sourcemodel' } { 'style' 'pushbutton' 'string' '...'  'userdata', 'sourcemodel' 'tag' 'push3' 'callback' cb_load }  ...
+        {} { 'style' 'text' 'string' 'Transformation to MNI (if any)' } { 'style' 'edit' 'string' 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' 'tag' 'transform3' 'userdata', 'sourcemodel' } { 'style' 'pushbutton' 'string' '...'  'userdata', 'sourcemodel' 'callback' cb_selectcoreg }  ...
         {} { 'style' 'text' 'string' 'Downsampling (AFNI only)' 'Tooltip' uiToolTip 'userdata' 'scale'}  { 'style' 'edit' 'string' '' 'tag' 'scale' 'enable' 'off' 'userdata' 'scale'} { }  ...
         };
 %         {} ...
@@ -215,7 +202,7 @@ if nargin < 2
 %         { 'style' 'checkbox' 'string' 'Compute TRGC' 'tag' 'trgc' 'value' 1 } ...
 %         { 'style' 'checkbox' 'string' 'Compute cross-spectrum' 'tag' 'crossspec' 'value' 1 } ...
     [result,usrdat,~,out] = inputgui('geometry', uigeom, 'uilist', uilist, 'helpcom', 'pophelp(''pop_roi_activity'')', ...
-        'title', 'Compute ROI activity', 'userdata', {headmodel leadfield roi [] EEG}, 'eval', [cb_select3 'set(findobj(gcf, ''tag'', ''down''), ''string'', '''');' ]);
+        'title', 'Compute ROI activity', 'userdata', {[] [] roi [] EEG}, 'eval', [cb_select 'set(findobj(gcf, ''tag'', ''down''), ''string'', '''');' ]);
     if isempty(result), return, end
     if isempty(usrdat{3}), usrdat{3} = 1; end
                      
@@ -285,7 +272,8 @@ if isfield(sourcemodelOri, 'tri')
     cfg.sourcemodel.tri    = sourcemodelOri.tri;
 end
 cfg.singleshell.batchsize = 5000; % speeds up the computation
-EEG.dipfit.leadfield = ft_prepare_leadfield(cfg);
+EEG.dipfit.sourcemodel = ft_prepare_leadfield(cfg);
+EEG.dipfit.sourcemodel.file = g.sourcemodel;
 
 % remove vertices not modeled (no longer necessary - makes holes in model)
 %     indRm = find(sourcemodel.inside == 0);
@@ -376,4 +364,19 @@ transform = [];
 % hold on;
 % plot3dmeshalign(tmp2, [], [1 0 0])
 
+% -------------------
+% get list of atlases
+% -------------------
+function [atlasstr, atlas] = getatlaslist(fileName)
+
+data = load('-mat', fileName);
+
+atlasstr = {};
+atlas    = {};
+for iAtlas = 1:length(data.Atlas)
+    if ~isempty(data.Atlas(iAtlas).Scouts) && ~strcmpi(data.Atlas(iAtlas).Name, 'Structures')
+        atlasstr{end+1} = [data.Atlas(iAtlas).Name ' (' int2str(length(data.Atlas(iAtlas).Scouts)) ' ROIs)' ];
+        atlas{   end+1} = data.Atlas(iAtlas).Name;
+    end
+end
 
