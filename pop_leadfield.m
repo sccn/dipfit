@@ -274,6 +274,7 @@ end
 cfg.singleshell.batchsize = 5000; % speeds up the computation
 EEG.dipfit.sourcemodel = ft_prepare_leadfield(cfg);
 EEG.dipfit.sourcemodel.file = g.sourcemodel;
+EEG.dipfit.sourcemodel.coordtransform = g.sourcemodel2mni;
 
 % remove vertices not modeled (no longer necessary - makes holes in model)
 %     indRm = find(sourcemodel.inside == 0);
