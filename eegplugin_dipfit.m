@@ -73,17 +73,19 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
                         'LASTCOM = ''% === History not supported for manual dipole fitting ==='';' ]  catchstrs.store_and_hist ];
     comauto    = [ check_dipfit check_chans  '[EEG LASTCOM] = pop_multifit(EEG);'        catchstrs.store_and_hist ];
     % preserve the '=" sign in the comment above: it is used by EEGLAB to detect appropriate LASTCOM
-    complot    = [ check_dipfit check_chans 'LASTCOM = pop_dipplot(EEG);'                     catchstrs.add_to_hist ];
-    comloreta  = [ check_dipfit check_chans 'LASTCOM = pop_dipfit_loreta(EEG);'               catchstrs.add_to_hist ];
+    complot    = [ check_dipfit check_chans 'LASTCOM = pop_dipplot(EEG);'               catchstrs.add_to_hist ];
+    comleadfield  = [ check_dipfit check_chans '[EEG, LASTCOM] = pop_leadfield(EEG);'   catchstrs.store_and_hist ];
+    comloreta  = [ check_dipfit check_chans 'LASTCOM = pop_dipfit_loreta(EEG);'         catchstrs.add_to_hist ];
     
     % create menus
     % ------------
-    submenu = uimenu( menu, 'Label', 'Locate dipoles using DIPFIT', 'separator', 'on', 'tag', 'dipfit', 'userdata', 'startup:off;study:on');
+    submenu = uimenu( menu, 'Label', 'Source localization using DIPFIT', 'separator', 'on', 'tag', 'dipfit', 'userdata', 'startup:off;study:on');
     lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
     if ~isdeployed && lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
     uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting, 'userdata', 'startup:off;study:on');
-    uimenu( submenu, 'Label', 'Coarse fit (grid scan)'   , 'CallBack', combatch, 'userdata', 'startup:off', 'separator', 'on');
-    uimenu( submenu, 'Label', 'Fine fit (iterative)'     , 'CallBack', comfit, 'userdata', 'startup:off');
-    uimenu( submenu, 'Label', 'Plot component dipoles'   , 'CallBack', complot, 'userdata', 'startup:off');
-    uimenu( submenu, 'Label', 'Autofit (coarse fit, fine fit & plot)', 'CallBack', comauto, 'userdata', 'startup:off;study:on');
-    uimenu( submenu, 'Label', 'Locate components using eLoreta', 'CallBack', comloreta, 'userdata', 'startup:off', 'separator', 'on');
+    uimenu( submenu, 'Label', 'Component dipole coarse fit', 'CallBack', combatch, 'userdata', 'startup:off', 'separator', 'on');
+    uimenu( submenu, 'Label', 'Component dipole fine fit'  , 'CallBack', comfit, 'userdata', 'startup:off');
+    uimenu( submenu, 'Label', 'Component dipole plot '     , 'CallBack', complot, 'userdata', 'startup:off');
+    uimenu( submenu, 'Label', 'Component dipole autofit'   , 'CallBack', comauto, 'userdata', 'startup:off;study:on');
+    uimenu( submenu, 'Label', 'Distributed source Leadfield matrix', 'CallBack', comleadfield, 'userdata', 'startup:off', 'separator', 'on');
+    uimenu( submenu, 'Label', 'Distributed source component modelling', 'CallBack', comloreta, 'userdata', 'startup:off');

@@ -56,8 +56,8 @@ if ~isfield(EEG, 'dipfit')
     error('General dipole fit settings not specified');
 end
 
-if ~isfield(EEG.dipfit, 'vol') && ~isfield(EEG.dipfit, 'hdmfile')
-    error('Dipolefit volume conductor model not specified');
+if ~isfield(EEG.dipfit, 'sourcemodel') || isempty(EEG.dipfit.sourcemodel)
+    error('You need to compute a Liedfield matrix first');
 end
 if ~isfield(EEG.dipfit, 'coordformat') || ~strcmpi(EEG.dipfit.coordformat, 'MNI')
     error('For this function, you must use the template BEM model MNI in dipole fit settings');
@@ -117,15 +117,37 @@ cfg                 = [];
 cfg.elec            = freqPre.elec;
 cfg.headmodel       = headmodel;
 cfg.reducerank      = 2;
-cfg.grid.resolution = 10;   % use a 3-D grid with a 1 cm resolution
-cfg.grid.unit       = 'mm';
+cfg.sourcemodel.unit       = 'mm';
+cfg.resolution = 5;
 cfg.channel         = { 'all' };
-[grid] = ft_prepare_leadfield(cfg);
+fprintf('\nGrid creation below is only to assess inside/outside brain voxels, use DIPFIT to create Leadfield matrix\n');
+grid = ft_prepare_sourcemodel(cfg);
 
 % source localization
 cfg              = struct(g.ft_sourceanalysis_params{:}); 
 cfg.frequency    = 18;  
-cfg.grid         = grid; 
+
+sourcemodeltmp = EEG.dipfit.sourcemodel;
+if isfield(sourcemodeltmp, 'tri')
+    fprintf(2, '\nYou are using a surface source model. Plotting interpolated 3-D volume is not recommended\n\n');
+end
+
+% find position futher than 5 mm from source model
+% same as above but specific to the current model
+% also will not interpolate white matter if no voxel as present there
+% grid.inside = grid.inside;
+% grid.inside(:) = true;
+% for iPos = 1:size(grid.pos,1)
+%     if all(sqrt(sum(bsxfun(@minus, tmp.pos, grid.pos(iPos,:)).^2,2)) > 10)
+%         grid.inside(iPos) = false;
+%     end
+% end
+
+sourcemodeltmp.inside    = [ sourcemodeltmp.inside;grid.inside(~grid.inside)];
+sourcemodeltmp.pos(end+1:end+sum(~grid.inside),:) = grid.pos(~grid.inside,:);
+sourcemodeltmp.leadfield = [ sourcemodeltmp.leadfield cell(1, sum(~grid.inside)) ];
+
+cfg.sourcemodel = sourcemodeltmp;
 cfg.headmodel    = headmodel;
 cfg.dics.projectnoise = 'yes';
 cfg.dics.lambda       = 0;
