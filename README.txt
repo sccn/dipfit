@@ -1,3 +1,13 @@
+Description
+=====
+DIPFIT is an [EEGLAB](http://eeglab.org) plugin to perform inverse source localization.
+
+A major obstacle to using EEG data to visualize macroscopic brain dynamics is the underdetermined nature of the inverse problem: Given an EEG scalp distribution of activity observed at given scalp electrodes, any number of brain source activity distributions can be found that would produce it. This is because there is any number of possible brain source area pairs or etc. that, jointly, add to the scalp data. Therefore, solving this EEG inverse problem requires making additional assumptions about the nature of the source distributions. A computationally tractable approach is to find some number of brain current dipoles (like vanishingly small batteries) whose summed projections to the scalp most nearly resemble the observed scalp distribution.
+
+Documentation
+====
+For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
+
 Version history
 =====
 v3.7
@@ -26,8 +36,4 @@ v3.0
 
 v2.0
 - Now uses Fieldtrip instead of its own functions
-
-Documentation
-====
-For documentation see https://sccn.ucsd.edu/wiki/A08:_DIPFIT
 
