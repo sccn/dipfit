@@ -78,7 +78,7 @@ if strcmpi(fieldbox, 'chanloc_withfid')
     end
 end
 
-if ~isempty(EEG.chanlocs) && ~isempty(EEG.chanlocs(1).X)
+if ~isempty(EEG.chanlocs)
     data.elec.elecpos = zeros(length( EEG.chanlocs ), 3);
     for ind = 1:length( EEG.chanlocs )
         data.elec.label{ind} = EEG.chanlocs(ind).labels;
