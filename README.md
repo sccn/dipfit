@@ -10,6 +10,9 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v4.0
+- Allowing computing and storing leadfield matrix
+
 v3.7
 - Better compatibility with compiled version of EEGLAB
 
