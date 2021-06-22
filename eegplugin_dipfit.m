@@ -1,6 +1,5 @@
-% eegplugin_dipfit() - DIPFIT plugin version 2.0 for EEGLAB menu. 
-%                      DIPFIT is the dipole fitting Matlab Toolbox of 
-%                      Robert Oostenveld (in collaboration with A. Delorme).
+% eegplugin_dipfit() - DIPFIT is the dipole fitting Matlab Toolbox of 
+%                      Robert Oostenveld and Arnaud Delorme
 %
 % Usage:
 %   >> eegplugin_dipfit(fig, trystrs, catchstrs);
