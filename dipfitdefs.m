@@ -81,7 +81,7 @@ try
     template_models(2).name     = 'Template Boundary Element Model (MNI)';
     template_models(2).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
     template_models(2).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
-    template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.ced' );
+    template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
     template_models(2).coordformat = 'MNI';
     template_models(2).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
     template_models(2).coord_transform(1).keywords  = { 'standard_1005' };
