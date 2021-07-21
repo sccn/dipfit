@@ -10,6 +10,9 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v4.2
+- Reverting to using old file to avoid MNI coordinate conversion conflict
+
 v4.1
 - Updating corrupted CED file to prevent crash
 
