@@ -119,6 +119,10 @@ switch fieldbox
             res = std_maketrialinfo([], EEG);
             data.trialinfo = struct2table(res.datasetinfo.trialinfo);
         else
+            if isempty(EEG.subject),   EEG.subject   = 'S01'; end
+            if isempty(EEG.condition), EEG.condition = 'n/a'; end
+            if isempty(EEG.group),     EEG.group     = 'n/a'; end
+            if isempty(EEG.session),   EEG.session   = 1;     end
             res = struct('subject', EEG.subject, 'condition', EEG.condition, 'group', EEG.group, 'session', EEG.session);
             data.trialinfo = struct2table(res);
             if isempty(data.trialinfo)

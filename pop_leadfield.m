@@ -72,7 +72,7 @@ roi(1).atlasliststr = { 'Desikan-Kiliany (68 ROIs)' };
 roi(1).atlaslist    = { 'Desikan-Kiliany' };
 roi(1).atlasind  = 1;
 
-p  = fileparts(which('pop_roi_activity.m'));
+p  = fileparts(which('pop_dipfit_settings.m'));
 roi(2).label = 'Surface source model: Use Brainstorm ICBM152 (with Desikan-Kilianny atlas)';
 roi(2).file  = fullfile(p, 'tess_cortex_mid_low_2000V.mat');
 roi(2).align = [0 -24 -45 0 0 -1.5707963000 1000 1000 1000];
