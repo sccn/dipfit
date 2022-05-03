@@ -117,7 +117,11 @@ switch fieldbox
         data.label = getchanlabels(tmpchanlocs, 1:EEG.nbchan);
         if EEG.trials > 1
             res = std_maketrialinfo([], EEG);
-            data.trialinfo = struct2table(res.datasetinfo.trialinfo);
+            if ~isempty(res)
+                data.trialinfo = struct2table(res.datasetinfo.trialinfo);
+            else
+                data.trialinfo = [];
+            end
         else
             if isempty(EEG.subject),   EEG.subject   = 'S01'; end
             if isempty(EEG.condition), EEG.condition = 'n/a'; end
