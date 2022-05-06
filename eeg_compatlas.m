@@ -62,12 +62,18 @@ end
 hm = load('head_modelColin27_5003_Standard-10-5-Cap339.mat', '-mat');
 
 % coord transform to the HM file space
-if strcmpi(EEG.dipfit.coordformat, 'MNI')
-    tf = traditionaldipfit([0.0000000000 -26.6046230000 -46.0000000000 0.1234625600 0.0000000000 -1.5707963000 1000.0000000000 1000.0000000000 1000.0000000000]);
-elseif strcmpi(EEG.dipfit.coordformat, 'spherical')
-    tf = traditionaldipfit([-5.658258      1.039259     -42.80596   -0.00981033    0.03362692   0.004391199      860.8199      926.6112       858.162]);
-else
-    error('Unknown coordinate format')
+try
+    if isfield(EEG.dipfit, 'coord_transform') || ~empty(EEG.dipfit.coord_transform)
+        tf = traditionaldipfit(EEG.dipfit.coord_transform);
+    end
+catch
+    if strcmpi(EEG.dipfit.coordformat, 'MNI')
+        tf = traditionaldipfit([0.0000000000 -26.6046230000 -46.0000000000 0.1234625600 0.0000000000 -1.5707963000 1000.0000000000 1000.0000000000 1000.0000000000]);
+    elseif strcmpi(EEG.dipfit.coordformat, 'spherical')
+        tf = traditionaldipfit([-5.658258      1.039259     -42.80596   -0.00981033    0.03362692   0.004391199      860.8199      926.6112       858.162]);
+    else
+        error('Unknown coordinate format')
+    end
 end
 tfinv = pinv(tf); % the transformation is from HM to MNI (we need to invert it)
 
