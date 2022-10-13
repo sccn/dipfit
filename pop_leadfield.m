@@ -220,9 +220,9 @@ end
 if length(EEG) > 1
     % check that the dipfit settings are the same
     if nargin < 2
-        [ EEG, com ] = eeg_eval( 'pop_roi_activity', EEG, 'warning', 'on', 'params', options );
+        [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'warning', 'on', 'params', options );
     else
-        [ EEG, com ] = eeg_eval( 'pop_roi_activity', EEG, 'params', options );
+        [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'params', options );
     end
     return;
 end

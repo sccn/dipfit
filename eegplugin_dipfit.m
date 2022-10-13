@@ -86,5 +86,5 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     uimenu( submenu, 'Label', 'Component dipole fine fit'  , 'CallBack', comfit, 'userdata', 'startup:off');
     uimenu( submenu, 'Label', 'Component dipole plot '     , 'CallBack', complot, 'userdata', 'startup:off');
     uimenu( submenu, 'Label', 'Component dipole autofit'   , 'CallBack', comauto, 'userdata', 'startup:off;study:on');
-    uimenu( submenu, 'Label', 'Distributed source Leadfield matrix', 'CallBack', comleadfield, 'userdata', 'startup:off', 'separator', 'on');
+    uimenu( submenu, 'Label', 'Distributed source Leadfield matrix', 'CallBack', comleadfield, 'userdata', 'startup:off;study:on', 'separator', 'on');
     uimenu( submenu, 'Label', 'Distributed source component modelling', 'CallBack', comloreta, 'userdata', 'startup:off');
