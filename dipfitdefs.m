@@ -77,6 +77,8 @@ try
     template_models(1).coord_transform(3).keywords  = { 'gsn' 'sfp' };
     template_models(1).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
     template_models(1).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(1).coord_transform(5).transform = [ 0 0 0 0 0.02 0 8.5 8.5 8.5 ];
+    template_models(1).coord_transform(5).keywords  = { 'egimff' };
 
     template_models(2).name     = 'Template Boundary Element Model (MNI)';
     template_models(2).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
@@ -91,6 +93,8 @@ try
     template_models(2).coord_transform(3).keywords  = { 'gsn' 'sfp' };
     template_models(2).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
     template_models(2).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(2).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
+    template_models(2).coord_transform(5).keywords  = { 'egimff' };
     
     template_models(3).name     = 'Template Spherical Four-Shell (custom conductances - see DIPFIT wiki)';
     template_models(3).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_SCCN.mat');
@@ -105,6 +109,8 @@ try
     template_models(3).coord_transform(3).keywords  = { 'gsn' 'sfp' };
     template_models(3).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
     template_models(3).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(3).coord_transform(5).transform = [ 0 0 0 0 0.02 0 8.5 8.5 8.5 ];
+    template_models(3).coord_transform(5).keywords  = { 'egimff' };
     
     template_models(4).name     = 'Template Boundary Element Model (custom conductances - see DIPFIT wiki)';
     template_models(4).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol_SCCN.mat' );
@@ -119,6 +125,8 @@ try
     template_models(4).coord_transform(3).keywords  = { 'gsn' 'sfp' };
     template_models(4).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
     template_models(4).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(4).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
+    template_models(4).coord_transform(5).keywords  = { 'egimff' };
 
     % Set DipoleDensity path
     DIPOLEDENSITY_STDBEM = fullfile(folder, 'standard_BEM', 'standard_vol.mat');
