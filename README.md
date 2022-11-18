@@ -10,6 +10,13 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v4.4
+- Conversion for MFF file electrode coordinates
+- New Atlas for Loreta
+- Compute leadfield for multiple datasets
+- Add electrode O9 and O10 to template
+- Allow processing STUDY with no event
+
 v4.3
 - Fix Leadfield matrix error for file not found and issue with Fieldtrip conversion
 
