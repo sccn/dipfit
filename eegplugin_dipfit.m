@@ -66,7 +66,7 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     
     % menu callback commands
     % ----------------------
-    comsetting = [ trystrs.check_data check_chans '[EEG LASTCOM]=pop_dipfit_settings(EEG);'    catchstrs.store_and_hist ]; 
+    comsetting = [ trystrs.check_chanlocs '[EEG LASTCOM]=pop_dipfit_settings(EEG);'    catchstrs.store_and_hist ]; 
     combatch   = [ check_dipfit check_chans  '[EEG LASTCOM] = pop_dipfit_gridsearch(EEG);'    catchstrs.store_and_hist ];
     comfit     = [ check_dipfitnocheck check_chans [ 'EEG = pop_dipfit_nonlinear(EEG); ' ...
                         'LASTCOM = ''% === History not supported for manual dipole fitting ==='';' ]  catchstrs.store_and_hist ];
