@@ -55,11 +55,12 @@ g = finputcheck(varargin, ...
 if isstr(g), error(g); end;
 
 % loading hm file
-%#function head_modelColin27_5003_Standard-10-5-Cap339.mat
-if ~exist(meshfile, 'file')
-    error(sprintf('headplot(): deployed mesh file "%s" not found\n','head_modelColin27_5003_Standard-10-5-Cap339.mat'));
+if isdeployed
+    hm = load('-mat', fullfile( ctfroot, 'functions', 'supportfiles', 'head_modelColin27_5003_Standard-10-5-Cap339.mat'));
+else
+    p  = fileparts(which('eeglab.m'));
+    hm = load('-mat', fullfile( p, 'functions', 'supportfiles', 'head_modelColin27_5003_Standard-10-5-Cap339.mat'));
 end
-hm = load('head_modelColin27_5003_Standard-10-5-Cap339.mat', '-mat');
 
 % coord transform to the HM file space
 try
