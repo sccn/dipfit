@@ -2,7 +2,7 @@
 %     on a regular grid spanning the whole brain. Any dipoles that explains
 %     a component with a too large relative residual variance is removed.
 %
-% Usage: 
+% Usage:
 %  >> EEGOUT = pop_dipfit_gridsearch( EEGIN ); % pop up interactive window
 %  >> EEGOUT = pop_dipfit_gridsearch( EEGIN, comps );
 %  >> EEGOUT = pop_dipfit_gridsearch( EEGIN, comps, xgrid, ygrid, zgrid, thresh )
@@ -50,8 +50,8 @@ function [EEGOUT, com] = pop_dipfit_gridsearch(EEG, select, xgrid, ygrid, zgrid,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 1
-  help pop_dipfit_gridsearch;
-  return;
+    help pop_dipfit_gridsearch;
+    return;
 end;
 
 if ~plugin_askinstall('Fieldtrip-lite', 'ft_dipolefitting'), return; end;
@@ -60,19 +60,19 @@ EEGOUT = EEG;
 com = '';
 
 if ~isfield(EEG, 'chanlocs')
-  error('No electrodes present');
+    error('No electrodes present');
 end
 
 if ~isfield(EEG, 'icawinv')
-  error('No ICA components to fit');
+    error('No ICA components to fit');
 end
 
 if ~isfield(EEG, 'dipfit')
-  error('General dipolefit settings not specified');
+    error('General dipolefit settings not specified');
 end
 
 if ~isfield(EEG.dipfit, 'vol') & ~isfield(EEG.dipfit, 'hdmfile')
-  error('Dipolefit volume conductor model not specified');
+    error('Dipolefit volume conductor model not specified');
 end
 
 dipfitdefs
@@ -81,67 +81,67 @@ if strcmpi(EEG.dipfit.coordformat, 'CTF')
     xgridstr     = sprintf('linspace(-%2.1f,%2.1f,24)', maxrad, maxrad);
     ygridstr     = sprintf('linspace(-%2.1f,%2.1f,24)', maxrad, maxrad);
     zgridstr     = sprintf('linspace(0,%2.1f,12)', maxrad);
-end;
+end
 if nargin < 2
-  % get the default values and filenames
-  promptstr = { 'Component(s) (not faster if few comp.)', ...
-      'Grid in X-direction', ...
-      'Grid in Y-direction', ...
-      'Grid in Z-direction', ...
-      'Rejection threshold RV(%)' };
-  
-  inistr    = { 
-    [ '1:' int2str(size(EEG.icawinv,2)) ], ...
-      xgridstr, ...
-      ygridstr, ...
-      zgridstr, ...
-      rejectstr };
-    
+    % get the default values and filenames
+    promptstr = { 'Component(s) (not faster if few comp.)', ...
+        'Grid in X-direction', ...
+        'Grid in Y-direction', ...
+        'Grid in Z-direction', ...
+        'Rejection threshold RV(%)' };
+
+    inistr    = {
+        [ '1:' int2str(size(EEG.icawinv,2)) ], ...
+        xgridstr, ...
+        ygridstr, ...
+        zgridstr, ...
+        rejectstr };
+
     result = inputdlg2( promptstr, 'Batch dipole fit -- pop_dipfit_gridsearch()', 1,  inistr, 'pop_dipfit_gridsearch');
-    
-    if length(result)==0
-      % user pressed cancel
-      return
+
+    if isempty(result)
+        % user pressed cancel
+        return
     end
-    
+
     select = eval( [ '[' result{1} ']' ]);
     xgrid  = eval( result{2} );
     ygrid  = eval( result{3} );
     zgrid  = eval( result{4} );
     reject = eval( result{5} ) / 100;	% string is in percent
     options = { };
-  else
+else
     if nargin < 2
-      select = [1:size(EEG.icawinv,2)];
-    end;
+        select = 1:size(EEG.icawinv,2);
+    end
     if nargin < 3
-      xgrid  = eval( xgridstr );
-    end;
+        xgrid  = eval( xgridstr );
+    end
     if nargin < 4
-      ygrid  = eval( ygridstr );
-    end;
+        ygrid  = eval( ygridstr );
+    end
     if nargin < 5
-      zgrid  = eval( zgridstr );
-    end;
+        zgrid  = eval( zgridstr );
+    end
     if nargin < 6
-      reject  = eval( rejectstr );
-    end;
+        reject  = eval( rejectstr );
+    end
     options = { 'waitbar' 'none' };
-  end;
-  
-  % perform batch fit with single dipole for all selected channels and components
-  % warning off;
-  warning backtrace off;  
-  EEGOUT = dipfit_gridsearch(EEG, 'component', select, 'xgrid', xgrid, 'ygrid', ygrid, 'zgrid', zgrid, options{:});
-  warning backtrace on;
-  EEGOUT.dipfit.model  = dipfit_reject(EEGOUT.dipfit.model, reject);
+end
 
-  try 
+% perform batch fit with single dipole for all selected channels and components
+% warning off;
+warning backtrace off;
+EEGOUT = dipfit_gridsearch(EEG, 'component', select, 'xgrid', xgrid, 'ygrid', ygrid, 'zgrid', zgrid, options{:});
+warning backtrace on;
+EEGOUT.dipfit.model  = dipfit_reject(EEGOUT.dipfit.model, reject);
+
+try
     EEGOUT = eeg_compatlas(EEGOUT);
-  catch
+catch
     disp('Fail to look up brain areas');
-  end
-  
-  % FIXME reject is not being used at the moment
-  disp('Done');
-  com = sprintf('EEG = pop_dipfit_gridsearch(EEG, %s);', vararg2str( { select xgrid, ygrid, zgrid reject }));
+end
+
+% FIXME reject is not being used at the moment
+disp('Done');
+com = sprintf('EEG = pop_dipfit_gridsearch(EEG, %s);', vararg2str( { select xgrid, ygrid, zgrid reject }));
