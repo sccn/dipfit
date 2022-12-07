@@ -44,7 +44,7 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function data = eeglab2fieldtrip(EEG, fieldbox, transform)
+function [data, megheadmodel] = eeglab2fieldtrip(EEG, fieldbox, transform)
 
 if nargin < 2
     help eeglab2fieldtrip
@@ -93,14 +93,66 @@ if ~isempty(EEG.chanlocs)
     data.elec.pnt = data.elec.elecpos;
 end
 
+% check for MEG channel types
+megFlag = false;
+if ~isempty(EEG.chanlocs)
+    alltypes = { EEG.chanlocs.type };
+    alltypes = cellfun(@char, alltypes, 'UniformOutput',false);
+    containsMEG = cellfun(@(x)contains(x, 'meg', 'IgnoreCase',true), alltypes);
+    containsEEG = cellfun(@(x)contains(x, 'eeg', 'IgnoreCase',true), alltypes);
+    if any(containsMEG) && any(containsEEG)
+        error('Dataset contains both EEG and MEG channels');
+    elseif all(containsEEG) == 0 && any(containsMEG)
+        megFlag = true;
+%         data.grad = data.elec;
+%         data.grad.chanpos = data.grad.elecpos;
+%         data.grad = rmfield(data.grad, 'elecpos');
+%         data.grad = rmfield(data.grad, 'pnt');
+%         data = rmfield(data, 'elec');
+%         disp('Setting gradiometer location unit to cm')
+    end
+end
+
 if nargin > 2
     if strcmpi(transform, 'dipfit')
         if ~isempty(EEG.dipfit.coord_transform)
+            if megFlag && ~isfield(EEG.etc,'fileio_dat')
+                error('To perform MEG source localization, you must import the data using File-io')
+            end
+
             disp('Transforming electrode coordinates to match head model');
-            transfmat = traditionaldipfit(EEG.dipfit.coord_transform);
-            data.elec.elecpos = transfmat * [ data.elec.elecpos ones(size(data.elec.elecpos,1),1) ]';
-            data.elec.elecpos = data.elec.elecpos(1:3,:)';
-            data.elec.pnt = data.elec.elecpos;
+            if megFlag
+                % MEG
+                data = [];
+                data.grad = EEG.etc.fileio_dat.grad;
+                if length(data.grad.label) ~= length(EEG.chanlocs)
+                    % select channels
+                    chanList = [];
+                    for iChan = 1:length(EEG.chanlocs)
+                        indChan = strmatch(EEG.chanlocs(iChan).labels, data.grad.label, 'exact');
+                        if length(indChan) ~= 1
+                            error('Non-MEG channel or MEG channel with unknown label found')
+                        end
+                        chanList = [chanList iChan];
+                    end
+                    if isfield(data.grad, 'chanori')  data.grad.chanori  = data.grad.chanori( chanList,:); end
+                    if isfield(data.grad, 'chanpos')  data.grad.chanpos  = data.grad.chanpos( chanList,:); end
+                    if isfield(data.grad, 'chantype') data.grad.chantype = data.grad.chantype(chanList,:); end
+                    if isfield(data.grad, 'chanunit') data.grad.chanunit = data.grad.chanunit(chanList); end
+                    if isfield(data.grad, 'label'   ) data.grad.label    = data.grad.label(   chanList); end
+                    if isfield(data.grad, 'tra')      data.grad.tra      = data.grad.tra(     chanList,:); end
+                end
+
+                disp('If you have transformed MEG channel coordinates (more than setting the nose direction)')
+                disp('MEG source localization will be innacurate.');
+
+            else
+                % EEG
+                transfmat = traditionaldipfit(EEG.dipfit.coord_transform);
+                data.elec.elecpos = transfmat * [ data.elec.elecpos ones(size(data.elec.elecpos,1),1) ]';
+                data.elec.elecpos = data.elec.elecpos(1:3,:)';
+                data.elec.pnt = data.elec.elecpos;
+            end
         else
             disp('Warning: no transformation of electrode coordinates to match head model');
         end

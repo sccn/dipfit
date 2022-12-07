@@ -259,7 +259,11 @@ elseif strcmpi(ext, '.mat') % && isfield(g.sourcemodel, 'tri')
 end
 
 cfg      = [];
-cfg.elec = dataPre.elec;
+if isfield(dataPre, 'elec')
+    cfg.elec = dataPre.elec;
+elseif isfield(dataPre, 'grad')
+    cfg.grad = dataPre.grad;
+end
 %     cfg.grid    = sourcemodelOri;   % source points
 if isfield(headmodel, 'vol')
     cfg.headmodel = headmodel.vol;   % volume conduction model

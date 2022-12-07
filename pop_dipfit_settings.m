@@ -78,7 +78,7 @@ com = '';
 dipfitdefs;
 
 if nargin < 2
-    
+
     if isstr(EEG) % setmodel
         tmpdat = get(gcf, 'userdata');
         chanfile = tmpdat.chanfile;
@@ -89,7 +89,7 @@ if nargin < 2
                                                      fastif(strcmpi(tmpdat(tmpval).coordformat,'CTF'),3,1)));
         set(findobj(gcf, 'tag', 'mri'  ), 'string', char(tmpdat(tmpval).mrifile));
         set(findobj(gcf, 'tag', 'meg'), 'string', char(tmpdat(tmpval).chanfile));
-        set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
+        set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', ~tmpdat(tmpval).coregval);
         if tmpval < 3
             set(findobj(gcf, 'userdata', 'editable'), 'enable', 'off');
         else
@@ -110,7 +110,7 @@ if nargin < 2
         end
         tmpl = tmpdat(tmpval).coord_transform;
         set(findobj(gcf, 'tag', 'coregtext'), 'string', '');
-        set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
+        set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', ~tmpdat(tmpval).coregval);
         [allkeywordstrue, transform] = lookupchantemplate(chanfile, tmpl);
         if allkeywordstrue
             set(findobj(gcf, 'tag', 'coregtext'), 'string', char(vararg2str({ transform })));
@@ -166,12 +166,24 @@ if nargin < 2
     %                'else' ...
     %                '  set(findobj(gcbf, ''tag'', ''origin''), ''enable'', ''on'');' ...
     %                'end;' ];
+
+    % determine default model
+    % -----------------------
     valmodel    = 2; % default model now MNI
     userdata    = [];
     if isfield(EEG(1).chaninfo, 'filename')
         if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end
         if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard_1005')),        valmodel = 2; end
     end
+    if ~isempty(EEG.chanlocs) % check MEG
+        alltypes = { EEG.chanlocs.type };
+        alltypes = cellfun(@char, alltypes, 'UniformOutput',false);
+        containsMEG = cellfun(@(x)contains(x, 'meg', 'IgnoreCase',true), alltypes);
+        if any(containsMEG)
+            valmodel = 5;
+        end
+    end
+    nocoreg = ~template_models(valmodel).coregval;
    
     geomvert = [1 1 1 1 1 1 1 1];
     
@@ -244,7 +256,7 @@ if nargin < 2
         { 'style' 'text'        'string' 'Matrix to align chan. locs. with head model' 'userdata' 'coreg' } ...
         { 'style' 'edit'        'string' '' 'tag' 'coregtext' 'userdata' 'coreg' } ...
         { 'style' 'pushbutton'  'string' 'Co-register' 'fontweight' 'bold' 'tag' 'manualcoreg' 'callback' cb_selectcoreg 'userdata' { EEG(1).chanlocs,EEG(1).chaninfo } } ... 
-        { 'style' 'checkbox'    'string' 'No Co-Reg.'    'tag' 'coregcheckbox' 'value' 0  'userdata' 'coreg' } ... 
+        { 'style' 'checkbox'    'string' 'No Co-Reg.'    'tag' 'coregcheckbox' 'value' nocoreg  'userdata' 'coreg' } ... 
         { 'style' 'text'        'string' 'Channels to omit from dipole fitting' } ...
         { 'style' 'edit'        'string' ''             'tag' 'elec' } ...
         { 'style' 'pushbutton'  'string' '...' 'callback' cb_selectelectrodes } { } ...
@@ -351,7 +363,6 @@ if 0
                               'Z'     , mat2cell(elec3.elecpos(:,3)') );
         OUTEEG.chanlocs = convertlocs(OUTEEG.chanlocs, 'cart2all');
     end
-    
 end
 
 com = sprintf('EEG = pop_dipfit_settings( EEG, %s);', vararg2str(options));

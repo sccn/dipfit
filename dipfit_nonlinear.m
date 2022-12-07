@@ -5,15 +5,6 @@
 % Usage: 
 %  >> EEGOUT = dipfit_nonlinear( EEGIN, optarg)
 %
-% Inputs:
-%    ...
-%
-% Optional inputs are specified in key/value pairs and can be:
-%    ...
-%
-% Output:
-%    ...
-%
 % Author: Robert Oostenveld, SMI/FCDC, Nijmegen 2003
 %         Thanks to Nicolas Robitaille for his help on the CTF MEG
 %         implementation
@@ -96,6 +87,21 @@ if strcmpi(EEG.dipfit.coordformat, 'CTF')
    comp = rmfield(comp, 'elec');
    cfg.gradfile = EEG.dipfit.chanfile;
 end
+
+if isfield(comp, 'grad')
+    fprintf('Selecting single shell source localization for MEG');
+    segmentedmri = load('-mat', EEG.dipfit.hdmfile);
+    segmentedmri = segmentedmri.segmentedmri;
+    segmentedmri = ft_convert_coordsys(segmentedmri, comp.grad.coordsys);
+    
+    cfg2 = [];
+    cfg2.method='singleshell';
+    vol = ft_prepare_headmodel(cfg2, segmentedmri);
+    cfg.headmodel = vol;
+    cfg.method = 'singleshell';
+    cfg = rmfield(cfg, 'hdmfile');
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END                                                                     %

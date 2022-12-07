@@ -101,6 +101,20 @@ if ~isfield(cfg, 'component')
   cfg.component = 1:size(comp.topo,2);
 end
 
+if isfield(comp, 'grad')
+    fprintf('Selecting single shell source localization for MEG');
+    segmentedmri = load('-mat', EEG.dipfit.hdmfile);
+    segmentedmri = segmentedmri.segmentedmri;
+    segmentedmri = ft_convert_coordsys(segmentedmri, comp.grad.coordsys);
+    
+    cfg2 = [];
+    cfg2.method='singleshell';
+    vol = ft_prepare_headmodel(cfg2, segmentedmri);
+    cfg.headmodel = vol;
+    cfg.method = 'singleshell';
+    cfg = rmfield(cfg, 'hdmfile');
+end
+
 % for each component scan the whole brain with dipoles using FIELDTRIPs
 % dipolefitting function
 source = ft_dipolefitting(cfg, comp);

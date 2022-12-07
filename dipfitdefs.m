@@ -69,6 +69,7 @@ try
     template_models(1).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
     template_models(1).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
     template_models(1).coordformat = 'spherical';
+    template_models(1).coregval = true;
     template_models(1).coord_transform(1).transform = [ ];
     template_models(1).coord_transform(1).keywords  = { 'standard-10-5-cap385' };
     template_models(1).coord_transform(2).transform = [ 13.4299     0.746361    -0.654923  0.000878113   -0.0818352    0.0023747     0.852832     0.941595      0.85887];
@@ -85,6 +86,7 @@ try
     template_models(2).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
     template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
     template_models(2).coordformat = 'MNI';
+    template_models(2).coregval = true;
     template_models(2).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
     template_models(2).coord_transform(1).keywords  = { 'standard_1005' };
     template_models(2).coord_transform(2).transform = [ 0.832146  -15.6287 2.41142 0.0812144 0.000937391 -1.5732 1.17419 1.06011 1.14846];
@@ -101,6 +103,7 @@ try
     template_models(3).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
     template_models(3).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
     template_models(3).coordformat = 'spherical';
+    template_models(3).coregval = true;
     template_models(3).coord_transform(1).transform = [ ];
     template_models(3).coord_transform(1).keywords  = { 'standard-10-5-cap385' };
     template_models(3).coord_transform(2).transform = [ 13.4299     0.746361    -0.654923  0.000878113   -0.0818352    0.0023747     0.852832     0.941595      0.85887];
@@ -117,6 +120,7 @@ try
     template_models(4).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
     template_models(4).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
     template_models(4).coordformat = 'MNI';
+    template_models(4).coregval = true;
     template_models(4).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
     template_models(4).coord_transform(1).keywords  = { 'standard_1005' };
     template_models(4).coord_transform(2).transform = [ 0.832146  -15.6287 2.41142 0.0812144 0.000937391 -1.5732 1.17419 1.06011 1.14846];
@@ -128,6 +132,13 @@ try
     template_models(4).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
     template_models(4).coord_transform(5).keywords  = { 'egimff' };
 
+    template_models(5).name     = 'Single Shell Template Boundary Element Model for MEG';
+    template_models(5).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_seg_mri_meg.mat' );
+    template_models(5).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
+    template_models(5).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
+    template_models(5).coregval = false;
+    template_models(5).coordformat = 'MNI';
+
     % Set DipoleDensity path
     DIPOLEDENSITY_STDBEM = fullfile(folder, 'standard_BEM', 'standard_vol.mat');
 
@@ -135,10 +146,9 @@ catch
     disp('Warning: problem when setting paths for dipole localization');
 end
 
-template_models(5).name        = 'CTF MEG';
-template_models(5).coordformat = 'CTF';
 template_models(6).name        = 'Custom model files from other template or individual subject';
 template_models(6).coordformat = 'MNI'; % custom model
+template_models(6).coregval    = true; % custom model
 
 % constrain electrode to sphere
 % -----------------------------
