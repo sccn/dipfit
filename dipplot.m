@@ -16,8 +16,8 @@
 %                   other fields  : used for graphic interface.
 %
 % Optional input:
-%  'rvrange'  - [min max] or [max] Only plot dipoles with residual variace
-%               within the given range. Default: plot all dipoles.
+%  'rvrange'  - [min max] or [max] Only plot dipoles with residual variance
+%               0 to 100 within the given range. Default: plot all dipoles.
 %  'summary'  - ['on'|'off'|'3d'] Build a summary plot with three views (top,
 %               back, side). {default: 'off'}
 %  'mri'      - Matlab file containing an MRI volume and a 4-D transformation

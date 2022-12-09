@@ -189,7 +189,10 @@ else
     elseif strcmpi(EEG.dipfit.coordformat, 'CTF')
         dipplot(EEG.dipfit.model(comps), tmpoptions{:});
     else
-        dipplot(EEG.dipfit.model(comps), 'meshdata', EEG.dipfit.hdmfile, tmpoptions{:});
+        if isempty(strfind(EEG.dipfit.hdmfile, 'seg'))
+            tmpoptions = [ tmpoptions { 'meshdata', EEG.dipfit.hdmfile }];
+        end
+        dipplot(EEG.dipfit.model(comps), tmpoptions{:});
     end
 end
     
