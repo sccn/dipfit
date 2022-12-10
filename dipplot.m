@@ -260,7 +260,7 @@ g = finputcheck( varargin, { 'color'        ''         []                 [];
     'image'        { 'string' 'real' }  []       'mri';
     'summary'      'string'   { 'on2' 'on' 'off' '3d' }          'off';
     'coordformat'  'string'   { 'MNI' 'spherical' 'CTF' 'auto' } 'auto';
-    'meshdata'     { 'string' 'cell' }  []         '' },        'dipplot');
+    'meshdata'     { 'string' 'cell' 'struct' }  []         '' },        'dipplot');
 %                             'std'       'cell'     []                  {};
 %                             'coreg'     'real'     []                  [];
 
@@ -619,6 +619,15 @@ if strcmpi(g.holdon, 'off')
                     g.meshdata = { 'vertices' tmp.vol.bnd(1).pnt 'faces' tmp.vol.bnd(1).tri };
                 else
                     g.meshdata = { 'vertices' tmp.vol.bnd(1).pos 'faces' tmp.vol.bnd(1).tri };
+                end
+            end
+            if isstruct(g.meshdata)
+                if isfield(g.meshdata, 'bnd')
+                    if isfield(g.meshdata, 'pos')
+                        g.meshdata = {g.meshdata.bnd.pos};
+                    else
+                        g.meshdata = {g.meshdata.bnd.pnt};
+                    end
                 end
             end
             hh = patch(g.meshdata{:}, 'facecolor', 'none', 'edgecolor', COLORMESH, 'tag', 'mesh');

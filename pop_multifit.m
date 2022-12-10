@@ -141,6 +141,9 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin)
     if skipscan
         disp('Skipping scanning since all dipoles have non-null starting positions.');
     else
+        if mean([EEG(1).chanlocs.sph_radius]) < 20
+            meanradius = meanradius/10;
+        end
         disp('Scanning dipolar grid to find acceptable starting positions...');
         xg  = linspace(-floor(meanradius), floor(meanradius),11);
         yg  = linspace(-floor(meanradius), floor(meanradius),11);
