@@ -19,18 +19,22 @@
 %                To plot dipoles in a subject MRI, first normalize the MRI 
 %                to the MNI brain using SPM2.
 %   'coordformat' - ['MNI'|'Spherical'] Coordinates returned by the selected
-%                head model. May be MNI coordinates or spherical coordinates
+%                head model. May be MNI coordinates or spherical coordinates.
 %                (For spherical coordinates, the head radius is assumed to be 85 mm.
 %   'chanfile' - [string] template channel locations file. (This function will
 %                check whether your channel locations file is compatible with 
 %                your selected head model).
 %   'chansel'  - [integer vector] indices of channels to use for dipole fitting. 
 %                {default: all}
+%   'electrodes' - [integer array] indices of channels to include
+%                  in the dipole model. {default: all}
+%   'model'      - ['standardBEM'|'standardBESA'] use one of the standard
+%                  models. {default: all}
 %   'coord_transform' - [float array] Talairach transformation matrix for
 %                       aligning the dataset channel locations to the selected 
-%                       head model.
-%   'electrodes'      - [integer array] indices of channels to include
-%                       in the dipole model. {default: all}
+%                       head model. You may also use the string
+%                       'warpfiducials' to 
+%
 % Outputs:
 %   OUTEEG	output dataset
 %
@@ -175,14 +179,6 @@ if nargin < 2
         if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard-10-5-cap385')), valmodel = 1; end
         if ~isempty(findstr(lower(EEG(1).chaninfo.filename), 'standard_1005')),        valmodel = 2; end
     end
-    if ~isempty(EEG.chanlocs) % check MEG
-        alltypes = { EEG.chanlocs.type };
-        alltypes = cellfun(@char, alltypes, 'UniformOutput',false);
-        containsMEG = cellfun(@(x)contains(x, 'meg', 'IgnoreCase',true), alltypes);
-        if any(containsMEG)
-            valmodel = 5;
-        end
-    end
     nocoreg = ~template_models(valmodel).coregval;
    
     geomvert = [1 1 1 1 1 1 1 1];
@@ -307,19 +303,41 @@ end
 g = finputcheck(options, { 'hdmfile'  'string'    []         '';
                                  'mrifile'  'string'    []         '';
                                  'chanfile' 'string'    []         '';
+                                 'chanfile' 'string'    []         '';
                                  'chansel'  'integer'   []         [1:EEG.nbchan];
                                  'electrodes' 'integer'   []         [];
-                                 'coord_transform' 'real' []         [];
+                                 'coord_transform' ''     []         [];
+                                 'plotalignment' 'string'     {'on' 'off'}         'off';
+                                 'model'      'string'    {'standardBEM' 'standardBESA' ''}         '';
                                  'coordformat' 'string'    { 'MNI','spherical','CTF' } 'MNI' });
 if isstr(g), error(g); end
 
+dipfitdefs;
 OUTEEG = rmfield(OUTEEG, 'dipfit');
 OUTEEG.dipfit.hdmfile     = g.hdmfile;
 OUTEEG.dipfit.mrifile     = g.mrifile;
 OUTEEG.dipfit.chanfile    = g.chanfile;
+OUTEEG.dipfit.coordformat = g.coordformat;
+if strcmpi(g.model, 'standardBESA')
+    OUTEEG.dipfit.hdmfile     = template_models(1).hdmfile;
+    OUTEEG.dipfit.mrifile     = template_models(1).mrifile;
+    OUTEEG.dipfit.chanfile    = template_models(1).chanfile;
+    OUTEEG.dipfit.coordformat = template_models(1).coordformat;
+elseif strcmpi(g.model, 'standardBEM')
+    OUTEEG.dipfit.hdmfile     = template_models(2).hdmfile;
+    OUTEEG.dipfit.mrifile     = template_models(2).mrifile;
+    OUTEEG.dipfit.chanfile    = template_models(2).chanfile;
+    OUTEEG.dipfit.coordformat = template_models(2).coordformat;
+end
 OUTEEG.dipfit.chansel     = g.chansel;
-OUTEEG.dipfit.coordformat     = g.coordformat;
-OUTEEG.dipfit.coord_transform = g.coord_transform;
+if ischar(g.coord_transform)
+    if isequal(g.coord_transform, 'warpfiducials')
+        [~,coord_transform] = coregister(EEG.chaninfo.nodatchans, OUTEEG.dipfit.chanfile, 'warp', 'auto', 'manual', 'off');
+        OUTEEG.dipfit.coord_transform = coord_transform;
+    end
+else
+    OUTEEG.dipfit.coord_transform = g.coord_transform;
+end
 if ~isempty(g.electrodes), OUTEEG.dipfit.chansel = g.electrodes; end
 
 % removing channels with no coordinates
@@ -328,6 +346,101 @@ if ~isempty(g.electrodes), OUTEEG.dipfit.chansel = g.electrodes; end
 if length(indices) < length(EEG.chanlocs)
     disp('Warning: Channels removed from dipole fitting no longer have location coordinates!');
     OUTEEG.dipfit.chansel = intersect( OUTEEG.dipfit.chansel, indices);
+end
+
+if isfield(OUTEEG.chanlocs, 'type') && ~isempty(strfind(OUTEEG.chanlocs(1).type, 'meg'))
+
+    % Standard head model
+    comp = eeglab2fieldtrip(OUTEEG, 'componentanalysis', 'dipfit');
+    if ischar(OUTEEG.dipfit.hdmfile) && ~isempty(strfind(OUTEEG.dipfit.hdmfile, 'dipfit')) && ~isempty(strfind(OUTEEG.dipfit.hdmfile, 'standard_vol'))
+        disp('Coordinate transform for MEG detected - no MRI provided, always try to use the subject''s MRI')
+
+        if ~isempty(OUTEEG.dipfit.coord_transform)
+            % Rational: we change the MRI transformation matrix to match
+            % the final sensor space based on the provided transformation
+            % matrix (usually computed using fiducials)
+
+            transform_mat = OUTEEG.dipfit.coord_transform;
+            if isfield(OUTEEG.chaninfo, 'originalnosedir')
+                if strcmpi(OUTEEG.chaninfo.originalnosedir, '+Y')
+                    transform_mat(6) = transform_mat(6)+pi/2;
+                end
+            end
+            tra = traditionaldipfit( transform_mat );
+            tra = pinv(tra);
+
+            % change MRI coordinate system
+            mri = ft_read_mri(OUTEEG.dipfit.mrifile);
+            mri.transform = tra * mri.transform;
+            mri.coordsys  = comp.grad.coordsys; % target coordinate system
+            mri.unit      = comp.grad.unit;
+            OUTEEG.dipfit.mrifile = mri;
+
+            % change head model coordinate system
+            hdm = ft_read_headmodel(OUTEEG.dipfit.hdmfile);
+            hdm.bnd(3).pos = tra * [ hdm.bnd(3).pos ones(length(hdm.bnd(3).pos),1)]';
+            hdm.bnd(3).pos = hdm.bnd(3).pos(1:3,:)';
+            hdm.unit = comp.grad.unit;
+            OUTEEG.dipfit.hdmfile = hdm;
+        else
+            % Rational: we perform automated coordinate transformation
+            % based on the MRI and MEG coordinate space coordinates
+
+            mri = ft_read_mri(OUTEEG.dipfit.mrifile);
+            mri.coordsys = 'acpc';
+            OUTEEG.dipfit.mrifile  = ft_convert_coordsys(mri, comp.grad.coordsys); % better to use the fiducials above
+
+            hdm = ft_read_headmodel(OUTEEG.dipfit.hdmfile);
+            hdm.coordsys = 'acpc';
+            OUTEEG.dipfit.hdmfile  = ft_convert_coordsys(hdm, comp.grad.coordsys); % better to use the fiducials above
+
+        end
+        cfg = [];
+        cfg.method='singleshell';
+        OUTEEG.dipfit.hdmfile = ft_prepare_headmodel(cfg, OUTEEG.dipfit.hdmfile.bnd(3)); % use brain surface only
+        OUTEEG.dipfit.coord_transform = []; % all contained in the MRI transformation and model coordinate
+
+    else
+        if ~isempty(OUTEEG.dipfit.coord_transform)
+            error([ 'Coordinate transform cannot be used with custom head model.' 10 'The model is assumed to be aligned with the sensors.' ])
+        end
+        OUTEEG.dipfit.mrifile = ft_read_mri(OUTEEG.dipfit.mrifile);
+        OUTEEG.dipfit.hdmfile = ft_read_headmodel(OUTEEG.dipfit.hdmfile);
+    end
+
+    % ft_convert_coordsys assumes the same units
+    if isequal(comp.grad.unit, 'cm') && isequal(OUTEEG.dipfit.mrifile.unit, 'mm')
+        OUTEEG.dipfit.mrifile.transform = traditionaldipfit([0 0 0 0 0 0 1/10 1/10 1/10])*OUTEEG.dipfit.mrifile.transform;
+        OUTEEG.dipfit.mrifile.unit      = 'cm';
+        OUTEEG.dipfit.hdmfile.bnd.pos   = OUTEEG.dipfit.hdmfile.bnd.pos/10;
+        OUTEEG.dipfit.hdmfile.unit      = 'cm';
+    end
+
+    % check alignment
+    if strcmpi(g.plotalignment, 'on')
+        if ischar(OUTEEG.dipfit.hdmfile)
+            hdm = ft_read_headmodel(OUTEEG.dipfit.hdmfile);
+        else
+            hdm = OUTEEG.dipfit.hdmfile;
+        end
+        if isequal(hdm.unit, 'mm') && isequal(comp.grad.unit, 'cm')
+            hdm.bnd.pos = hdm.bnd.pos/10;
+        end
+        figure; ft_plot_mesh(comp.grad.chanpos(1:2:end,:), 'vertexindex', true);
+        ft_plot_mesh(hdm.bnd(1), 'facealpha', 0.5)
+    end
+else
+    % check alignment
+    if strcmpi(g.plotalignment, 'on')
+        if ischar(OUTEEG.dipfit.hdmfile)
+            hdm = ft_read_headmodel(OUTEEG.dipfit.hdmfile);
+        else
+            hdm = OUTEEG.dipfit.hdmfile;
+        end
+        figure; 
+        ft_plot_mesh(comp.elec.chanpos(1:2:end,:), 'vertexindex', true);
+        ft_plot_mesh(hdm.bnd(1), 'facealpha', 0.5)
+    end
 end
 
 % checking electrode configuration

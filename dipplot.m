@@ -352,9 +352,11 @@ if isstr(g.mri)
     try
         g.mri = load('-mat', g.mri);
         g.mri = g.mri.mri;
+        g.mri.anatomy = round(gammacorrection( g.mri.anatomy, 0.8));
+        g.mri.anatomy = uint8(round(g.mri.anatomy/max(reshape(g.mri.anatomy, prod(g.mri.dim),1))*255));
     catch
         disp('Failed to read Matlab file. Attempt to read MRI file using function ft_read_mri');
-        try,
+        try
             warning off;
             g.mri = ft_read_mri(g.mri);
             %g.mri.anatomy(find(g.mri.anatomy > 255)) = 255;
@@ -370,6 +372,9 @@ if isstr(g.mri)
             error('Cannot load file using ft_read_mri');
         end
     end
+else
+    g.mri.anatomy = round(gammacorrection( g.mri.anatomy, 0.8));
+    g.mri.anatomy = uint8(round(g.mri.anatomy/max(reshape(g.mri.anatomy, prod(g.mri.dim),1))*255));
 end
 
 if strcmpi(g.coordformat, 'spherical')
@@ -380,7 +385,12 @@ else
     dat.sph2spm    = []; %traditional([0 0 0 0 0 pi 1 1 1]);
 end
 
-if ~isempty(g.transform), dat.sph2spm = traditionaldipfit(g.transform);
+if ~isempty(g.transform)
+    if size(g.transform, 1) == 4
+        dat.sph2spm = traditionaldipfit(g.transform);
+    else
+        dat.sph2spm = g.transform;
+    end
 end
 if isfield(g.mri, 'anatomycol')
     dat.imgs       = g.mri.anatomycol;
@@ -605,10 +615,14 @@ if strcmpi(g.holdon, 'off')
         try
             if isstr(g.meshdata)
                 tmp = load('-mat', g.meshdata);
-                g.meshdata = { 'vertices' tmp.vol.bnd(1).pnt 'faces' tmp.vol.bnd(1).tri };
+                if isfield(tmp.vol.bnd, 'pnt')
+                    g.meshdata = { 'vertices' tmp.vol.bnd(1).pnt 'faces' tmp.vol.bnd(1).tri };
+                else
+                    g.meshdata = { 'vertices' tmp.vol.bnd(1).pos 'faces' tmp.vol.bnd(1).tri };
+                end
             end
             hh = patch(g.meshdata{:}, 'facecolor', 'none', 'edgecolor', COLORMESH, 'tag', 'mesh');
-        catch, disp('Unrecognize model file (probably CTF)'); end
+        catch, disp('Unrecognize model file - could not extract mesh'); end
     end
 end
 
@@ -1310,9 +1324,15 @@ if dat.axistight && ~dat.cornermri
     wy2 = [ 1 1; 1 1]*dat.imgcoords{2}(mricoord(2));
     wz3 = [ 1 1; 1 1]*dat.imgcoords{3}(mricoord(3));
 else
-    wx1 =  [ 1 1; 1 1]*dat.imgcoords{1}(1);
-    wy2 =  [ 1 1; 1 1]*dat.imgcoords{2}(end);
-    wz3 =  [ 1 1; 1 1]*dat.imgcoords{3}(1);
+    if dat.transform(1,4) < 0    wx1 =  [ 1 1; 1 1]*dat.imgcoords{1}(1);
+    else                         wx1 =  [ 1 1; 1 1]*dat.imgcoords{1}(end);
+    end
+    if dat.transform(2,4) < 0    wy2 =  [ 1 1; 1 1]*dat.imgcoords{2}(end); % only condition tested wx1 and wx3 are infered
+    else                         wy2 =  [ 1 1; 1 1]*dat.imgcoords{2}(1);
+    end
+    if dat.transform(3,4) < 0    wz3 =  [ 1 1; 1 1]*dat.imgcoords{3}(1);
+    else                         wz3 =  [ 1 1; 1 1]*dat.imgcoords{3}(end);
+    end
 end
 
 % transform MRI coordinates to electrode space

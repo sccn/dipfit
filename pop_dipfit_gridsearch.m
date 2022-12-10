@@ -76,7 +76,7 @@ if ~isfield(EEG.dipfit, 'vol') & ~isfield(EEG.dipfit, 'hdmfile')
 end
 
 dipfitdefs
-if strcmpi(EEG.dipfit.coordformat, 'CTF')
+if strcmpi(EEG.dipfit.coordformat, 'CTF') || isfield(EEG.chanlocs, 'type') && ~isempty(strfind(lower(EEG.chanlocs(1).type), 'meg'))
     maxrad = 8.5;
     xgridstr     = sprintf('linspace(-%2.1f,%2.1f,24)', maxrad, maxrad);
     ygridstr     = sprintf('linspace(-%2.1f,%2.1f,24)', maxrad, maxrad);

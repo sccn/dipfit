@@ -65,6 +65,7 @@ folder = fileparts(which('pop_dipfit_settings'));
 try
     delim  = folder(end);
     template_models(1).name     = 'Template Spherical Four-Shell (BESA)';
+    template_models(2).shortname = 'standardBESA';
     template_models(1).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_BESA.mat');
     template_models(1).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
     template_models(1).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
@@ -82,6 +83,7 @@ try
     template_models(1).coord_transform(5).keywords  = { 'egimff' };
 
     template_models(2).name     = 'Template Boundary Element Model (MNI)';
+    template_models(2).shortname = 'standardBEM';
     template_models(2).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
     template_models(2).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
     template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
@@ -132,13 +134,6 @@ try
     template_models(4).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
     template_models(4).coord_transform(5).keywords  = { 'egimff' };
 
-    template_models(5).name     = 'Single Shell Template Boundary Element Model for MEG';
-    template_models(5).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_seg_mri_meg.mat' );
-    template_models(5).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
-    template_models(5).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
-    template_models(5).coregval = false;
-    template_models(5).coordformat = 'MNI';
-
     % Set DipoleDensity path
     DIPOLEDENSITY_STDBEM = fullfile(folder, 'standard_BEM', 'standard_vol.mat');
 
@@ -146,9 +141,9 @@ catch
     disp('Warning: problem when setting paths for dipole localization');
 end
 
-template_models(6).name        = 'Custom model files from other template or individual subject';
-template_models(6).coordformat = 'MNI'; % custom model
-template_models(6).coregval    = true; % custom model
+template_models(end+1).name      = 'Custom model and mri files from Fieldtrip';
+template_models(end).coordformat = 'MNI'; % custom model
+template_models(end).coregval    = true; % custom model
 
 % constrain electrode to sphere
 % -----------------------------

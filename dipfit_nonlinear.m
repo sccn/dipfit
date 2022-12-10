@@ -88,21 +88,6 @@ if strcmpi(EEG.dipfit.coordformat, 'CTF')
    cfg.gradfile = EEG.dipfit.chanfile;
 end
 
-if isfield(comp, 'grad')
-    fprintf('Selecting single shell source localization for MEG');
-    segmentedmri = load('-mat', EEG.dipfit.hdmfile);
-    segmentedmri = segmentedmri.segmentedmri;
-    segmentedmri = ft_convert_coordsys(segmentedmri, comp.grad.coordsys);
-    
-    cfg2 = [];
-    cfg2.method='singleshell';
-    vol = ft_prepare_headmodel(cfg2, segmentedmri);
-    cfg.headmodel = vol;
-    cfg.method = 'singleshell';
-    cfg = rmfield(cfg, 'hdmfile');
-end
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END                                                                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
