@@ -10,6 +10,11 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v5.0
+- Adding MEG support
+- Adding custom Fieldtrip model support
+- Various optimizations
+
 v4.4
 - Conversion for MFF file electrode coordinates
 - New Atlas for Loreta
