@@ -64,76 +64,43 @@ defaultvolume.o = [0 0 0];
 folder = fileparts(which('pop_dipfit_settings'));
 try
     delim  = folder(end);
-    template_models(1).name     = 'Template Spherical Four-Shell (BESA)';
-    template_models(2).shortname = 'standardBESA';
-    template_models(1).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_BESA.mat');
-    template_models(1).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
-    template_models(1).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
-    template_models(1).coordformat = 'spherical';
-    template_models(1).coregval = true;
-    template_models(1).coord_transform(1).transform = [ ];
-    template_models(1).coord_transform(1).keywords  = { 'standard-10-5-cap385' };
-    template_models(1).coord_transform(2).transform = [ 13.4299     0.746361    -0.654923  0.000878113   -0.0818352    0.0023747     0.852832     0.941595      0.85887];
-    template_models(1).coord_transform(2).keywords  = { 'standard_1005' };
-    template_models(1).coord_transform(3).transform = [ -0.254232 0 -8.4081  0 0.00272526  0  8.59463     -10.9643      10.4963 ];
-    template_models(1).coord_transform(3).keywords  = { 'gsn' 'sfp' };
-    template_models(1).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
-    template_models(1).coord_transform(4).keywords  = { 'egi' 'elp' };
-    template_models(1).coord_transform(5).transform = [ 0 0 0 0 0.02 0 8.5 8.5 8.5 ];
-    template_models(1).coord_transform(5).keywords  = { 'egimff' };
+    template_models = [];
+    template_models(end+1).name     = 'Template Spherical Four-Shell (BESA)';
+    template_models(end).shortname = 'standardBESA';
+    template_models(end).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_BESA.mat');
+    template_models(end).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
+    template_models(end).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
+    template_models(end).coordformat = 'spherical';
+    template_models(end).coregval = true;
+    template_models(end).coord_transform(1).transform = [ ];
+    template_models(end).coord_transform(1).keywords  = { 'standard-10-5-cap385' };
+    template_models(end).coord_transform(2).transform = [ 13.4299     0.746361    -0.654923  0.000878113   -0.0818352    0.0023747     0.852832     0.941595      0.85887];
+    template_models(end).coord_transform(2).keywords  = { 'standard_1005' };
+    template_models(end).coord_transform(3).transform = [ -0.254232 0 -8.4081  0 0.00272526  0  8.59463     -10.9643      10.4963 ];
+    template_models(end).coord_transform(3).keywords  = { 'gsn' 'sfp' };
+    template_models(end).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
+    template_models(end).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(end).coord_transform(5).transform = [ 0 0 0 0 0.02 0 8.5 8.5 8.5 ];
+    template_models(end).coord_transform(5).keywords  = { 'egimff' };
 
-    template_models(2).name     = 'Template Boundary Element Model (MNI)';
-    template_models(2).shortname = 'standardBEM';
-    template_models(2).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
-    template_models(2).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
-    template_models(2).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
-    template_models(2).coordformat = 'MNI';
-    template_models(2).coregval = true;
-    template_models(2).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
-    template_models(2).coord_transform(1).keywords  = { 'standard_1005' };
-    template_models(2).coord_transform(2).transform = [ 0.832146  -15.6287 2.41142 0.0812144 0.000937391 -1.5732 1.17419 1.06011 1.14846];
-    template_models(2).coord_transform(2).keywords  = { 'standard-10-5-cap385' };
-    template_models(2).coord_transform(3).transform = [ 0.0547605 -17.3653 -8.13178 0.0755019 0.00318357 -1.56963 11.7138 12.7933 12.213 ];
-    template_models(2).coord_transform(3).keywords  = { 'gsn' 'sfp' };
-    template_models(2).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
-    template_models(2).coord_transform(4).keywords  = { 'egi' 'elp' };
-    template_models(2).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
-    template_models(2).coord_transform(5).keywords  = { 'egimff' };
+    template_models(end+1).name     = 'Template Boundary Element Model (MNI)';
+    template_models(end).shortname = 'standardBEM';
+    template_models(end).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
+    template_models(end).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
+    template_models(end).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
+    template_models(end).coordformat = 'MNI';
+    template_models(end).coregval = true;
+    template_models(end).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
+    template_models(end).coord_transform(1).keywords  = { 'standard_1005' };
+    template_models(end).coord_transform(2).transform = [ 0.832146  -15.6287 2.41142 0.0812144 0.000937391 -1.5732 1.17419 1.06011 1.14846];
+    template_models(end).coord_transform(2).keywords  = { 'standard-10-5-cap385' };
+    template_models(end).coord_transform(3).transform = [ 0.0547605 -17.3653 -8.13178 0.0755019 0.00318357 -1.56963 11.7138 12.7933 12.213 ];
+    template_models(end).coord_transform(3).keywords  = { 'gsn' 'sfp' };
+    template_models(end).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
+    template_models(end).coord_transform(4).keywords  = { 'egi' 'elp' };
+    template_models(end).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
+    template_models(end).coord_transform(5).keywords  = { 'egimff' };
     
-    template_models(3).name     = 'Template Spherical Four-Shell (custom conductances - see DIPFIT wiki)';
-    template_models(3).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_SCCN.mat');
-    template_models(3).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
-    template_models(3).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
-    template_models(3).coordformat = 'spherical';
-    template_models(3).coregval = true;
-    template_models(3).coord_transform(1).transform = [ ];
-    template_models(3).coord_transform(1).keywords  = { 'standard-10-5-cap385' };
-    template_models(3).coord_transform(2).transform = [ 13.4299     0.746361    -0.654923  0.000878113   -0.0818352    0.0023747     0.852832     0.941595      0.85887];
-    template_models(3).coord_transform(2).keywords  = { 'standard_1005' };
-    template_models(3).coord_transform(3).transform = [ -0.254232 0 -8.4081  0 0.00272526  0  8.59463     -10.9643      10.4963 ];
-    template_models(3).coord_transform(3).keywords  = { 'gsn' 'sfp' };
-    template_models(3).coord_transform(4).transform = [ 0 0 0 0 0.02 0 85 85 85 ];
-    template_models(3).coord_transform(4).keywords  = { 'egi' 'elp' };
-    template_models(3).coord_transform(5).transform = [ 0 0 0 0 0.02 0 8.5 8.5 8.5 ];
-    template_models(3).coord_transform(5).keywords  = { 'egimff' };
-    
-    template_models(4).name     = 'Template Boundary Element Model (custom conductances - see DIPFIT wiki)';
-    template_models(4).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol_SCCN.mat' );
-    template_models(4).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
-    template_models(4).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' );
-    template_models(4).coordformat = 'MNI';
-    template_models(4).coregval = true;
-    template_models(4).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];
-    template_models(4).coord_transform(1).keywords  = { 'standard_1005' };
-    template_models(4).coord_transform(2).transform = [ 0.832146  -15.6287 2.41142 0.0812144 0.000937391 -1.5732 1.17419 1.06011 1.14846];
-    template_models(4).coord_transform(2).keywords  = { 'standard-10-5-cap385' };
-    template_models(4).coord_transform(3).transform = [ 0.0547605 -17.3653 -8.13178 0.0755019 0.00318357 -1.56963 11.7138 12.7933 12.213 ];
-    template_models(4).coord_transform(3).keywords  = { 'gsn' 'sfp' };
-    template_models(4).coord_transform(4).transform = [ 0 -15 0 0.08 0 -1.571 102 93 100 ];
-    template_models(4).coord_transform(4).keywords  = { 'egi' 'elp' };
-    template_models(4).coord_transform(5).transform = [ 0 -15 0 0.08 0 -1.571 10.2 9.3 10.0 ];
-    template_models(4).coord_transform(5).keywords  = { 'egimff' };
-
     % Set DipoleDensity path
     DIPOLEDENSITY_STDBEM = fullfile(folder, 'standard_BEM', 'standard_vol.mat');
 
@@ -141,7 +108,8 @@ catch
     disp('Warning: problem when setting paths for dipole localization');
 end
 
-template_models(end+1).name      = 'Custom model and mri files from Fieldtrip';
+template_models(end+1).name      = 'Custom files/structures (Fieldtrip format)';
+template_models(end).shortname   = 'custom';
 template_models(end).coordformat = 'MNI'; % custom model
 template_models(end).coregval    = true; % custom model
 
