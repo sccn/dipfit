@@ -87,7 +87,7 @@ comp = eeglab2fieldtrip(EEG, 'componentanalysis', 'dipfit');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Do some trick to force fieldtrip to use the multiple sphere model
-if strcmpi(EEG.dipfit.coordformat, 'CTF')
+if strcmpi(EEG.dipfit.coordformat, 'CTF') && ~isstruct(EEG.dipfit.chanfile)
    cfg = rmfield(cfg, 'channel');
    comp = rmfield(comp, 'elec');
    cfg.gradfile = EEG.dipfit.chanfile;
