@@ -237,7 +237,7 @@ g = finputcheck( varargin, { 'color'        ''         []                 [];
     'mesh'         'string'   { 'on' 'off' }     'off';
     'gui'          'string'   { 'on' 'off' }     'on';
     'verbose'      'string'   { 'on' 'off' }     'on';
-    'view'         'real'     []                 [0 0 1];
+    'view'         'real'     []                 [];
     'rvrange'      'real'     [0 Inf]            [];
     'transform'    'real'     [0 Inf]            [];
     'normlen'      'string'   { 'on' 'off' }     'off';
@@ -352,17 +352,13 @@ if isstr(g.mri)
     try
         g.mri = load('-mat', g.mri);
         g.mri = g.mri.mri;
-        g.mri.anatomy = round(gammacorrection( g.mri.anatomy, 0.8));
-        g.mri.anatomy = uint8(round(g.mri.anatomy/max(reshape(g.mri.anatomy, prod(g.mri.dim),1))*255));
+        g.mri.anatomy = gammacorrection_and_scale( g.mri.anatomy, 0.8);
     catch
         disp('Failed to read Matlab file. Attempt to read MRI file using function ft_read_mri');
         try
             warning off;
             g.mri = ft_read_mri(g.mri);
-            %g.mri.anatomy(find(g.mri.anatomy > 255)) = 255;
-            %g.mri.anatomy = uint8(g.mri.anatomy);
-            g.mri.anatomy = round(gammacorrection( g.mri.anatomy, 0.8));
-            g.mri.anatomy = uint8(round(g.mri.anatomy/max(reshape(g.mri.anatomy, prod(g.mri.dim),1))*255));
+            g.mri.anatomy = gammacorrection_and_scale( g.mri.anatomy, 0.8);
             % WARNING: if using double instead of int8, the scaling is different
             % [-128 to 128 and 0 is not good]
             % WARNING: the transform matrix is not 1, 1, 1 on the diagonal, some slices may be
@@ -373,14 +369,11 @@ if isstr(g.mri)
         end
     end
 else
-    g.mri.anatomy = round(gammacorrection( g.mri.anatomy, 0.8));
-    g.mri.anatomy = uint8(round(g.mri.anatomy/max(reshape(g.mri.anatomy, prod(g.mri.dim),1))*255));
+    g.mri.anatomy = gammacorrection_and_scale( g.mri.anatomy, 0.8);
 end
 
 if strcmpi(g.coordformat, 'spherical')
     dat.sph2spm    = sph2spm;
-elseif strcmpi(g.coordformat, 'CTF')
-    dat.sph2spm    = traditionaldipfit([0 0 0 0 0 0 10 -10 10]);
 else
     dat.sph2spm    = []; %traditional([0 0 0 0 0 pi 1 1 1]);
 end
@@ -405,9 +398,6 @@ if ~isfield(g.mri, 'xgrid')
     g.mri.xgrid = [1:size(dat.imgs,1)];
     g.mri.ygrid = [1:size(dat.imgs,2)];
     g.mri.zgrid = [1:size(dat.imgs,3)];
-end
-if strcmpi(g.coordformat, 'CTF')
-    g.mri.zgrid = g.mri.zgrid(end:-1:1);
 end
 
 dat.imgcoords = { g.mri.xgrid g.mri.ygrid g.mri.zgrid };
@@ -516,7 +506,7 @@ if strcmpi(g.summary, 'on') || strcmpi(g.summary, 'on2')
     pos1 = [0 0 0.5 0.5];
     pos2 = [0 0.5 0.5 .5];
     pos3 = [.5 .5 0.5 .5]; if strcmp(g.summary, 'on2'), tmp = pos1; pos1 =pos3; pos3 = tmp; end
-    axes('position', pos1);  newsources = dipplot(sourcesori, 'view', [1 0 0] , options{:}); axis off;
+    axes('position', pos1); newsources = dipplot(sourcesori, 'view', [1 0 0] , options{:}); axis off;
     axes('position', pos2); newsources = dipplot(sourcesori, 'view', [0 0 1] , options{:}); axis off;
     axes('position', pos3); newsources = dipplot(sourcesori, 'view', [0 -1 0], options{:}); axis off;
     axes('position', [0.5 0 0.5 0.5]);
@@ -587,7 +577,13 @@ if strcmpi(g.holdon, 'off')
     axis equal;
     set(gca, 'cameraviewanglemode', 'manual'); % disable change size
     camzoom(1.2^2);
-    if strcmpi(g.coordformat, 'CTF'), g.view(2:3) = -g.view(2:3); end
+    if isempty(g.view)
+        if strcmpi(g.coordformat, 'CTF'), 
+            g.view = [31 40]; 
+        else
+            g.view = [0 0 1];
+        end
+    end
     view(g.view);
     %set(gca, 'cameratarget',   dat.zeroloc); % disable change size
     %set(gca, 'cameraposition', dat.zeroloc+g.view*g.zoom); % disable change size
@@ -675,7 +671,6 @@ for index = 1:length(sources)
     
     % dipole length
     % -------------
-    multfactor = 1;
     if strcmpi(g.normlen, 'on')
         if nbdip == 1
             len    = sqrt(sum(sources(index).momxyz(1,:).^2));
@@ -684,13 +679,7 @@ for index = 1:length(sources)
             len2   = sqrt(sum(sources(index).momxyz(2,:).^2));
             len    = mean([len1 len2]);
         end
-        if strcmpi(g.coordformat, 'CTF'), len = len*10; end
-        if len ~= 0, multfactor = 15/len; end
-    else
-        if strcmpi(g.coordformat, 'spherical')
-            multfactor = 100;
-        else multfactor = 1.5;
-        end
+        multfactor = diff(xlim)/len/15;
     end
     
     for dip = 1:nbdip
@@ -1424,8 +1413,11 @@ else
     end
 end
 
-function x = gammacorrection(x, gammaval)
-x = 255 * (double(x)/255).^ gammaval;
+function x = gammacorrection_and_scale(x, gammaval)
+m = double(max(reshape(x, numel(x),1)));
+x = 255 * (double(x)/m).^ gammaval;
+x = uint8(round(x));
+
 % image is supposed to be scaled from 0 to 255
 % gammaval = 1 is identity of course
 

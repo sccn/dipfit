@@ -156,7 +156,9 @@ else
     end
 end
 if ~ismember('mri', lower(options(1:2:end)))
-    options = { options{:} 'mri' EEG.dipfit.mrifile };
+    optionsmri = { 'mri' EEG.dipfit.mrifile };
+else
+    optionsmri = {};
 end
 
 if strcmpi(typedip, 'besa')
@@ -164,9 +166,9 @@ if strcmpi(typedip, 'besa')
     if ~isempty(comps)
         [~, int] = intersect( [ EEG.sources.component ], comps);
         if isempty(int), error ('Localization not found for selected components'); end
-        dipplot(EEG.sources(int), 'sphere', 1, options{:});
+        dipplot(EEG.sources(int), 'sphere', 1, options{:}, optionsmri{:});
     else
-        dipplot(EEG.sources, options{:});
+        dipplot(EEG.sources, options{:}, optionsmri{:});
     end      
 else 
     if ~isfield(EEG, 'dipfit'), error('No DIPFIT dipole information in dataset');end
@@ -194,17 +196,17 @@ else
     % --------
     tmpoptions = { options{:} 'coordformat', EEG.dipfit.coordformat };
     if strcmpi(EEG.dipfit.coordformat, 'spherical')
-        dipplot(EEG.dipfit.model(comps), tmpoptions{:});
+        dipplot(EEG.dipfit.model(comps), tmpoptions{:}, optionsmri{:});
     elseif strcmpi(EEG.dipfit.coordformat, 'CTF')
-        dipplot(EEG.dipfit.model(comps), tmpoptions{:});
+        dipplot(EEG.dipfit.model(comps), tmpoptions{:}, optionsmri{:});
     else
         if ischar(EEG.dipfit.hdmfile) && isempty(strfind(EEG.dipfit.hdmfile, 'seg'))
             tmpoptions = [ tmpoptions { 'meshdata', EEG.dipfit.hdmfile }];
         end
-        dipplot(EEG.dipfit.model(comps), tmpoptions{:});
+        dipplot(EEG.dipfit.model(comps), tmpoptions{:}, optionsmri{:});
     end
 end
     
-if nargin < 3
+if nargout > 0
     com = sprintf('pop_dipplot( EEG, %s);', vararg2str({ comps options{:}}));
 end

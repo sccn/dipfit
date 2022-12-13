@@ -87,6 +87,13 @@ com = '';
 % get the default values and filenames
 dipfitdefs;
 
+% check channel file
+if isstruct(EEG) && isfield(EEG(1).chaninfo, 'filename')
+    originalChanfile = lower(EEG(1).chaninfo.filename);
+else 
+    originalChanfile = '';
+end
+    
 if nargin < 2
 
     if ischar(EEG)
@@ -101,7 +108,7 @@ if nargin < 2
             [mriEnable,  mriString ] = checkStructure(current.mrifile);
             [chanEnable, chanString] = checkStructure(current.chanfile);
             coordformat = current.coordformat;
-            set(findobj(gcf, 'tag', 'model'  ), 'string', hdmString, 'enable', hdmEnable);
+            set(findobj(gcf, 'tag', 'hdmfile'  ), 'string', hdmString, 'enable', hdmEnable);
             set(findobj(gcf, 'tag', 'mri'    ), 'string', mriString, 'enable', mriEnable);
             set(findobj(gcf, 'tag', 'chans'  ), 'string', chanString, 'enable', chanEnable);
             set(findobj(gcf, 'tag', 'coord'), 'value' , fastif(strcmpi(current.coordformat,'MNI'),2, ...
@@ -115,7 +122,11 @@ if nargin < 2
                 set(findobj(gcf, 'tag', 'coregtext'), 'string', '');
             else
                 set(findobj(gcf, 'tag', 'coregcheckbox'), 'value', 0);
-                set(findobj(gcf, 'tag', 'coregtext'), 'string', char(vararg2str({ current.coord_transform })));
+                if ~isempty(current.coord_transform)
+                    set(findobj(gcf, 'tag', 'coregtext'), 'string', char(vararg2str({ current.coord_transform })));
+                else
+                    set(findobj(gcf, 'tag', 'coregtext'), 'string', '');
+                end
             end
 
         elseif isequal(EEG, 'changemodel') % redraw
@@ -173,6 +184,7 @@ if nargin < 2
         OUTEEG.dipfit.mrifile     = template_models(valmodel).mrifile;
         OUTEEG.dipfit.chanfile    = template_models(valmodel).chanfile;
         OUTEEG.dipfit.coordformat = template_models(valmodel).coordformat;
+        OUTEEG.dipfit.coord_transform = [];
         nocoreg = ~template_models(valmodel).coregval;
     end
    
@@ -205,12 +217,12 @@ if nargin < 2
                  '''you are using must be entered (see tutorial).''), ''Template location file'');' ];
     commandload1 = [ '[filename, filepath] = uigetfile(''*'', ''Select a text file'');' ...
                     'if filename ~=0,' ...
-                    '   set(findobj(''parent'', gcbf, ''tag'', ''model''), ''string'', [ filepath filename ]);' ...
+                    '   set(findobj(''parent'', gcbf, ''tag'', ''hdmfile''), ''string'', [ filepath filename ]);' ...
                     'end;' ...
                     'clear filename filepath tagtest;' ];    
     commandload2 = [ '[filename, filepath] = uigetfile(''*'', ''Select a text file'');' ...
                     'if filename ~=0,' ...
-                    '   set(findobj(''parent'', gcbf, ''tag'', ''meg''), ''string'', [ filepath filename ]);' ...
+                    '   set(findobj(''parent'', gcbf, ''tag'', ''chans''), ''string'', [ filepath filename ]);' ...
                     'end;' ...
                     'clear filename filepath tagtest;' ];    
     commandload3 = [ '[filename, filepath] = uigetfile(''*'', ''Select a text file'');' ...
@@ -223,15 +235,17 @@ if nargin < 2
     changemodel = 'pop_dipfit_settings(''changemodel'');';
     
     templatenames = { template_models.name };
+    coordformatlist  = { 'spherical (head radius 85 mm)' 'MNI' 'Custom'};
+    coordformatshort = { 'Spherical' 'MNI' 'Custom'};
     elements  = { ...
         { 'style' 'text'        'string'  'Select a head model' 'fontweight' 'bold' } ...
         { 'style' 'popupmenu'     'string'  strvcat(templatenames{:}) ... 
                                 'callback' changemodel 'value' valmodel 'tag' 'listmodels' } ...
         { } { 'style' 'text'        'string' 'Output coordinates' } ...
-        { 'style' 'popupmenu'   'string' 'spherical (head radius 85 mm)|MNI|Custom' 'tag' 'coord' ...
+        { 'style' 'popupmenu'   'string' coordformatlist 'tag' 'coord' ...
           'value' valcoord  'userdata' 'editable' 'enable' 'off'} { } { } ...
         { } { 'style' 'text'        'string' 'Head model file' 'tag' 'headstr' } ...
-        { 'style' 'edit'        'string' '_______' 'tag' 'model' 'horizontalalignment' 'right' 'userdata' 'editable' 'enable' 'on'} ...
+        { 'style' 'edit'        'string' '_______' 'tag' 'hdmfile' 'horizontalalignment' 'right' 'userdata' 'editable' 'enable' 'on'} ...
         { 'style' 'pushbutton'  'string' 'Browse'  'tag' 'modelBrowse'   'callback' commandload1       'userdata' 'editable' 'enable' 'off' } ...
         { 'style' 'pushbutton'  'string' 'Help'      'callback' comhelp1 } ...
         { } { 'style' 'text'        'string' 'Associated MRI file for plotting' 'tag' 'mristr' } ...
@@ -258,36 +272,31 @@ if nargin < 2
     userdata.current_model    = OUTEEG.dipfit;
     userdata.chanlocs         = EEG(1).chanlocs;
     userdata.chaninfo         = EEG(1).chaninfo;
-    if isfield(EEG(1).chaninfo, 'filename')
-         userdata.chanfile         = lower(EEG(1).chaninfo.filename);
-    else userdata.chanfile         = '';
-    end
+    userdata.chanfile         = originalChanfile;
     optiongui = { 'geometry', geomhorz, 'uilist', elements, 'helpcom', 'pophelp(''pop_dipfit_settings'')', ...
                   'title', 'Dipole fit settings - pop_dipfit_settings()', ...
                   'userdata', userdata, 'geomvert', geomvert 'eval' 'pop_dipfit_settings(''setmodel'');' };
-	[result, ~, ~, outstruct] = inputgui( optiongui{:});
+	[result, ~, ~, restag] = inputgui( optiongui{:});
     if isempty(result), return; end
     
-    if test_wrong_parameters(outstruct)
+    if test_wrong_parameters(restag)
     	return;
     end
 
     % decode GUI inputs
     % -----------------
     options = {};
-    if ~strcmpi(result{3}, 'Matlab structure')
-        options = { options{:} 'hdmfile' result{3} };
+    if ~strcmpi(restag.hdmfile, 'Matlab structure')
+        options = { options{:} 'hdmfile' restag.hdmfile };
     end
-    if ~strcmpi(result{4}, 'Matlab structure')
-        options = { options{:} 'mrifile' result{4} };
+    if ~strcmpi( restag.mri, 'Matlab structure')
+        options = { options{:} 'mrifile' restag.mri };
     end
-    if ~strcmpi(result{5}, 'Matlab structure')
-        options = { options{:} 'chanfile' result{5} };
+    if ~strcmpi( restag.chans, 'Matlab structure')
+        options = { options{:} 'chanfile' restag.chans };
     end
-    if valcoord == 1
-        options = { options{:} 'coordformat' 'Spherical' };
-    elseif valcoord == 2
-        options = { options{:} 'coordformat' 'MNI' };
+    if restag.coord < 3
+        options = { options{:} 'coordformat' coordformatshort{restag.coord} };
     else
         if isfield(EEG.dipfit, 'coordformat') && ~isempty(EEG.dipfit.coordformat)
             options = { options{:} 'coordformat' EEG.dipfit.coordformat };
@@ -295,8 +304,8 @@ if nargin < 2
             options = { options{:} 'coordformat' 'other' };
         end
     end
-    if ~result{7}, options = { options{:} 'coord_transform' str2num(result{6}) }; end
-    options = { options{:} 'chansel' setdiff(1:EEG(1).nbchan, str2num(result{8})) };
+    if ~restag.coregcheckbox, options = { options{:} 'coord_transform' str2num(restag.coregtext) }; end
+    options = { options{:} 'chansel' setdiff(1:EEG(1).nbchan, str2num(restag.elec)) };
 
 else
     options = varargin;
@@ -319,10 +328,10 @@ g = finputcheck(options, { 'hdmfile'  'string'    []         '';
                                  'chanfile' ''    []         '';
                                  'chansel'  'integer'   []         1:EEG.nbchan;
                                  'electrodes' 'integer'   []         [];
-                                 'coord_transform' ''     []         [];
+                                 'coord_transform' ''     []         ''; % this does nothing while [] set to empty
                                  'plotalignment' 'string'     {'on' 'off'}         'off';
                                  'model'      'string'    {'standardBEM' 'standardBESA' ''}         '';
-                                 'coordformat' 'string'    { 'MNI','spherical','CTF' } 'MNI' });
+                                 'coordformat' 'string'    { } '' });
 if isstr(g), error(g); end
 
 dipfitdefs;
@@ -344,20 +353,25 @@ if strcmpi(g.model, 'standardBESA')
     OUTEEG.dipfit.mrifile     = template_models(1).mrifile;
     OUTEEG.dipfit.chanfile    = template_models(1).chanfile;
     OUTEEG.dipfit.coordformat = template_models(1).coordformat;
+    [~, OUTEEG.dipfit.coord_transform] = lookupchantemplate(originalChanfile, template_models(1).coord_transform);
 elseif strcmpi(g.model, 'standardBEM')
     OUTEEG.dipfit.hdmfile     = template_models(2).hdmfile;
     OUTEEG.dipfit.mrifile     = template_models(2).mrifile;
     OUTEEG.dipfit.chanfile    = template_models(2).chanfile;
     OUTEEG.dipfit.coordformat = template_models(2).coordformat;
+    [~, OUTEEG.dipfit.coord_transform] = lookupchantemplate(originalChanfile, template_models(2).coord_transform);
 end
 OUTEEG.dipfit.chansel     = g.chansel;
 if ischar(g.coord_transform)
     if isequal(g.coord_transform, 'warpfiducials')
         [~,coord_transform] = coregister(EEG.chaninfo.nodatchans, OUTEEG.dipfit.chanfile, 'warp', 'auto', 'manual', 'off');
-    else
+        OUTEEG.dipfit.coord_transform = coord_transform;
+    elseif isequal(g.coord_transform, 'alignfiducials')
         [~,coord_transform] = coregister(EEG.chaninfo.nodatchans, OUTEEG.dipfit.chanfile, 'warp', 'auto', 'warpmethod', 'globalrescale', 'manual', 'off');
+        OUTEEG.dipfit.coord_transform = coord_transform;
+    elseif ~isempty(g.coord_transform)
+        error('Unknown parameter for coord_transform')
     end
-    OUTEEG.dipfit.coord_transform = coord_transform;
 else
     OUTEEG.dipfit.coord_transform = g.coord_transform;
 end
@@ -367,8 +381,8 @@ if ~isempty(g.electrodes), OUTEEG.dipfit.chansel = g.electrodes; end
 % -------------------------------------
 [~, ~, ~, ~, indices] = readlocs(EEG.chanlocs);
 if length(indices) < length(EEG.chanlocs)
-    disp('Warning: Channels without coordinates removed from dipole fitting!');
     OUTEEG.dipfit.chansel = intersect( OUTEEG.dipfit.chansel, indices);
+    fprintf('Warning: %d channels without coordinates removed from dipole fitting\n', OUTEEG.nbchan-length(OUTEEG.dipfit.chansel));
 end
 
 if isfield(OUTEEG.chanlocs, 'type') && ~isempty(strfind(OUTEEG.chanlocs(1).type, 'meg'))
@@ -506,7 +520,7 @@ if 0
             disp('Use the channel editor to fit a head sphere to your channel locations.');
             disp('Check for inconsistency in dipole info.');
         else
-            disp('Results using standard BEM model are INACCURATE when the chan locations are not on the head surface!');
+            disp('Results using standard BEM model are INACCURATE when the channel locations are not on the head surface!');
         end
     else % common channels: performing best transformation
         TMP = OUTEEG;
