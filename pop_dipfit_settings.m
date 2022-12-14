@@ -90,6 +90,10 @@ dipfitdefs;
 % check channel file
 if isstruct(EEG) && isfield(EEG(1).chaninfo, 'filename')
     originalChanfile = lower(EEG(1).chaninfo.filename);
+    [filePathTmp,fileNameTmp, extTmp] = fileparts( originalChanfile );
+    if contains(extTmp, 'lay') || contains(filePathTmp, 'layout') || contains(fileNameTmp, 'layout')
+        error( [ 'You are using a layout channel coordinate file.' 10 'You may not use these coordinates for source localization.' 10 'They are made for 2-D plotting only.' ])
+    end
 else 
     originalChanfile = '';
 end
