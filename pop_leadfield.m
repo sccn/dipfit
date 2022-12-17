@@ -146,7 +146,7 @@ if ~isstruct(EEG)
         if tmpfilename(1) ~=0, set(findobj('parent', gcbf, 'tag', 'strfile3'), 'string', fullfile(tmpfilepath,tmpfilename)); end
         
     elseif strcmpi(varargin{1}, 'selectcoreg')
-        plot3dmeshalign(EEG.dipfit.hdmfile, get( findobj(fig, 'tag', 'strfile3'), 'string'), str2num(get( findobj(fig, 'tag', 'transform3'), 'string')));
+        plot3dmeshalign(EEG(1).dipfit.hdmfile, get( findobj(fig, 'tag', 'strfile3'), 'string'), str2num(get( findobj(fig, 'tag', 'transform3'), 'string')));
     end
     return
     
