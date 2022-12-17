@@ -81,7 +81,7 @@ end
 
 if ~plugin_askinstall('Fieldtrip-lite', 'ft_dipolefitting'), return; end
 
-OUTEEG = EEG;
+OUTEEG = EEG(1);
 com = '';
 
 % get the default values and filenames
