@@ -94,6 +94,7 @@ if ~isempty(setdiff(select, [1:size(EEG.icaweights,1)]))
 end
 
 g = finputcheck(options, { 'ft_sourceanalysis_params'  'cell'    {}         { 'method' 'eloreta' };
+                           'plotmode'                  'string'  {'2d' '3d'} '2d';
                            'ft_sourceplot_params'      'cell'    []         { 'method' 'slice' } }, 'pop_dipfit_loreta');
 if isstr(g), error(g); end;
 
@@ -147,10 +148,23 @@ sourcemodeltmp.inside    = [ sourcemodeltmp.inside;grid.inside(~grid.inside)];
 sourcemodeltmp.pos(end+1:end+sum(~grid.inside),:) = grid.pos(~grid.inside,:);
 sourcemodeltmp.leadfield = [ sourcemodeltmp.leadfield cell(1, sum(~grid.inside)) ];
 
-cfg.sourcemodel = sourcemodeltmp;
-cfg.headmodel    = headmodel;
-cfg.dics.projectnoise = 'yes';
-cfg.dics.lambda       = 0;
+if strcmpi(g.plotmode, '2d')
+    cfg.sourcemodel = sourcemodeltmp;
+    cfg.headmodel    = headmodel;
+    cfg.dics.projectnoise = 'yes';
+    cfg.dics.lambda       = 0;
+else
+    if 1
+        [ftVer, ftPath] = ft_version;
+        cfg.sourcemodel = ft_read_headshape(fullfile(ftPath, 'template', 'sourcemodel', 'cortex_8196.surf.gii'));
+    else
+        cfg.sourcemodel = headmodel.bnd(3);
+        cfg.sourcemodel.pnt = cfg.sourcemodel.pnt*0.98;
+    end
+    cfg.headmodel    = headmodel;
+    cfg.dics.projectnoise = 'yes';
+    cfg.dics.lambda       = 0;
+end
 
 for iSelect = select(:)'
     freqPre.powspctrm = EEG.icawinv(:,iSelect).*EEG.icawinv(:,iSelect);
@@ -158,21 +172,33 @@ for iSelect = select(:)'
     
     sourcePost_nocon = ft_sourceanalysis(cfg, freqPre);
 
-    %% load MRI and plot
-    mri = load('-mat', EEG.dipfit.mrifile);
-    mri = ft_volumereslice([], mri.mri);
-    
-    cfg2            = [];
-    cfg2.downsample = 2;
-    cfg2.parameter = 'avg.pow';
-    sourcePost_nocon.oridimord = 'pos';
-    sourcePost_nocon.momdimord = 'pos';
-    sourcePostInt_nocon  = ft_sourceinterpolate(cfg2, sourcePost_nocon , mri);
-    
-    cfg2              = struct(g.ft_sourceplot_params{:});
-    cfg2.funparameter = 'avg.pow';
-    ft_sourceplot(cfg2,sourcePostInt_nocon);
-    textsc(sprintf('eLoreta source localization of component %d power', iSelect), 'title');
+    if strcmpi(g.plotmode, '2d')
+        %% load MRI and plot
+        mri = load('-mat', EEG.dipfit.mrifile);
+        mri = ft_volumereslice([], mri.mri);
+        
+        cfg2            = [];
+        cfg2.downsample = 2;
+        cfg2.parameter = 'avg.pow';
+        sourcePost_nocon.oridimord = 'pos';
+        sourcePost_nocon.momdimord = 'pos';
+        sourcePostInt_nocon  = ft_sourceinterpolate(cfg2, sourcePost_nocon , mri);
+        
+        cfg2              = struct(g.ft_sourceplot_params{:});
+        cfg2.funparameter = 'avg.pow';
+        ft_sourceplot(cfg2,sourcePostInt_nocon);
+        textsc(sprintf('eLoreta source localization of component %d power', iSelect), 'title');
+    else
+        %% Surface source plot
+        cfg = [];
+        cfg.funparameter = 'pow';
+        cfg.maskparameter = 'pow';
+        cfg.method = 'surface';
+        cfg.latency = 0.4;
+        cfg.colorbar = 'off';
+        cfg.opacitylim = [0 200];
+        ft_sourceplot(cfg, sourcePost_nocon);
+    end
 end
 
 %% history

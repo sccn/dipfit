@@ -235,7 +235,11 @@ g = finputcheck(options, { ...
 if ischar(g), error(g); end
 
 % Source model
-headmodel = load('-mat', EEG.dipfit.hdmfile);
+try
+    headmodel = load('-mat', EEG.dipfit.hdmfile);
+catch
+    headmodel = EEG.dipfit.hdmfile;
+end
 EEG.dipfit.coord_transform = EEG.dipfit.coord_transform;
 dataPre = eeglab2fieldtrip(EEG, 'preprocessing', 'dipfit'); % does the transformation
 ftPath = fileparts(which('ft_defaults'));
