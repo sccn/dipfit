@@ -7,4 +7,4 @@ assignees: ''
 
 ---
 
-Please submit bugs at https://github.com/sccn/eeglab/issues
+Please submit bugs at [https://github.com/sccn/eeglab/issues](https://github.com/sccn/eeglab/issues)
