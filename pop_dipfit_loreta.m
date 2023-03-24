@@ -129,8 +129,8 @@ cfg              = struct(g.ft_sourceanalysis_params{:});
 cfg.frequency    = 18;  
 
 sourcemodeltmp = EEG.dipfit.sourcemodel;
-if isfield(sourcemodeltmp, 'tri')
-    fprintf(2, '\nYou are using a surface source model. Plotting interpolated 3-D volume is not recommended\n\n');
+if isfield(sourcemodeltmp, 'tri') && isequal(lower(g.plotmode), '2d')
+    fprintf(2, '\nYou are using a surface source model. Plotting interpolated volume slices is not recommended\n\n');
 end
 
 % find position futher than 5 mm from source model
