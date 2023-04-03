@@ -82,8 +82,8 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
     submenu = uimenu( menu, 'Label', 'Source localization using DIPFIT', 'separator', 'on', 'tag', 'dipfit', 'userdata', 'startup:off;study:on');
     lightMenuFlag = isempty(findobj(fig, 'Label', 'Reject data epochs'));
     if ~isdeployed && lightMenuFlag, try set(submenu, 'position', 14); catch, end; end
+    uimenu( submenu, 'Label', 'Head model and settings'    , 'CallBack', comsetting, 'userdata', 'startup:off;study:on');
     uimenu( submenu, 'Label', 'Create a head model from an MRI'  , 'CallBack', comhead, 'userdata', 'startup:off;study:off');
-    uimenu( submenu, 'Label', 'Head model and settings'  , 'CallBack', comsetting, 'userdata', 'startup:off;study:on');
     uimenu( submenu, 'Label', 'Component dipole coarse fit', 'CallBack', combatch, 'userdata', 'startup:off', 'separator', 'on');
     uimenu( submenu, 'Label', 'Component dipole fine fit'  , 'CallBack', comfit, 'userdata', 'startup:off');
     uimenu( submenu, 'Label', 'Component dipole plot '     , 'CallBack', complot, 'userdata', 'startup:off');
