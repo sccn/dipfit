@@ -10,6 +10,9 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v5.2
+- Fixing issue with normalizing plot in dipplot
+
 v5.1
 - Adding 3-D plot for eLoreta
 
