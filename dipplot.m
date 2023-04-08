@@ -680,6 +680,8 @@ for index = 1:length(sources)
             len    = mean([len1 len2]);
         end
         multfactor = diff(xlim)/len/15;
+    else
+        multfactor = 1;
     end
     
     for dip = 1:nbdip
