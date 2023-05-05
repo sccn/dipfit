@@ -280,6 +280,7 @@ if isfield(sourcemodelOri, 'tri')
     cfg.sourcemodel.tri    = sourcemodelOri.tri;
 end
 cfg.singleshell.batchsize = 5000; % speeds up the computation
+cfg.channel = EEG.dipfit.chansel;
 EEG.dipfit.sourcemodel = ft_prepare_leadfield(cfg);
 EEG.dipfit.sourcemodel.file = g.sourcemodel;
 EEG.dipfit.sourcemodel.coordtransform = g.sourcemodel2mni;

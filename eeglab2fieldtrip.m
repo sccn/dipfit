@@ -145,7 +145,7 @@ if nargin > 2
             disp('MEG source localization will be innacurate.');
         end
 
-        if ~megFlag && ~isempty(EEG.dipfit.coord_transform)
+        if ~megFlag && isfield(EEG.dipfit, 'coord_transform') && ~isempty(EEG.dipfit.coord_transform)
             disp('Transforming electrode coordinates to match head model');
             % EEG
             transfmat = traditionaldipfit(EEG.dipfit.coord_transform);

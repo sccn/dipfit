@@ -10,6 +10,9 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v5.3
+- Fixing ignoring channel when computing LeadField matrix
+
 v5.2
 - Fixing issue with normalizing plot in dipplot
 
