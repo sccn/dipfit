@@ -218,12 +218,39 @@ end
 % process multiple datasets
 % -------------------------
 if length(EEG) > 1
-    % check that the dipfit settings are the same
-    if nargin < 2
-        [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'warning', 'on', 'params', options );
-    else
-        [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'params', options );
+    % in all likelyhood, only need to compute a couple of times if we have
+    % multiple datasets. Bypass eeg_eval for now
+    differentLeadfieldIndices = [];
+
+    for iEEG = 1:length(EEG)
+
+        labels = { EEG(iEEG).chanlocs.labels };
+        found = false;
+        for iInd = differentLeadfieldIndices
+
+            leadfield = EEG(iInd).dipfit.sourcemodel;
+
+            if isequal(leadfield.label, labels)
+                fprintf('Dataset %d -> found the same leadfield in dataset %d\n', iEEG, iInd)
+                found = true;
+                break;
+            end
+        end
+        if found
+            EEG(iEEG).dipfit.sourcemodel = leadfield;
+        else
+            [ EEG(iEEG), com ] = pop_leadfield( EEG(iEEG), options{:} );
+            differentLeadfieldIndices = [ differentLeadfieldIndices iEEG];
+        end
+
     end
+
+    % check that the dipfit settings are the same
+    % if nargin < 2
+    %     [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'warning', 'on', 'params', options );
+    % else
+    %     [ EEG, com ] = eeg_eval( 'pop_leadfield', EEG, 'params', options );
+    % end
     return;
 end
 
