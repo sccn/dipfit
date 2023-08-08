@@ -12,6 +12,7 @@ Version history
 =====
 v5.3
 - Fixing ignoring channel when computing LeadField matrix
+- Fixing setting up fiducial manually
 
 v5.2
 - Fixing issue with normalizing plot in dipplot
