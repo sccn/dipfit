@@ -151,7 +151,6 @@ g = finputcheck(options, { 'datatype' 'string'  {'eeg' 'meg'} meeg{meegFlag+1};
                            'nasion'   'integer' []            [];
                            'lpa'      'integer' []            [];
                            'rpa'      'integer' []            [];
-                           'rpa'      'integer' []            [];
                            'ft_volumerealign'      ''  []            [];
                            'ft_volumesegment'      ''  []            [];
                            'ft_prepare_headmodel'  ''  []            [];
@@ -167,7 +166,15 @@ mri = ft_read_mri(mriFile);
 fileSideCar = fullfile(mriPath, [ mriFile2 '.json' ]);
 
 % read JSON file
-if exist(fileSideCar, 'file')
+if ~isempty(g.nasion) && ~isempty(g.lpa) && ~isempty(g.rpa)
+    if length(g.nasion) ~= 3 || length(g.lpa) ~= 3 || length(g.rpa) ~= 3
+        error('Fiducial coordinates must have 3 values (x, y, z)')
+    end
+    fiducials = [...
+        g.nasion;
+        g.lpa;
+        g.rpa];
+elseif exist(fileSideCar, 'file')
     disp('JSON sidecar file found');
     fid = fopen(fileSideCar, 'r');
     if fid == -1
@@ -223,7 +230,11 @@ if exist(fileSideCar, 'file')
         disp('JSON sidecar file found, but it does not contain the AnatomicalLandmarkCoordinates field');
     end
 else
-    error('Fiducials must be provided')
+    if ~isempty(g.nasion) || ~isempty(g.lpa) || ~isempty(g.rpa)
+        error('You must provide 3 fiducials')
+    else
+        error('Fiducials must be provided')
+    end
 end
 
 %mri  = ft_convert_coordsys(mri, 'acpc');
