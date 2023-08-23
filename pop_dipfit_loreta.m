@@ -99,7 +99,13 @@ g = finputcheck(options, { 'ft_sourceanalysis_params'  'cell'    {}         { 'm
 if isstr(g), error(g); end;
 
 %% compute spectral params (only need to be done once to get the right structures)
-dataPre = eeglab2fieldtrip(EEG, 'preprocessing', 'dipfit');
+chans = EEG.dipfit.chansel;
+if isempty(chans)
+    chans = 1:EEG.nbchan;
+end
+EEGTMP = pop_select(EEG, 'channel', chans);
+dataPre = eeglab2fieldtrip(EEGTMP, 'preprocessing', 'dipfit');
+
 cfg = [];
 cfg.method    = 'mtmfft';
 cfg.output    = 'powandcsd';
@@ -167,8 +173,8 @@ else
 end
 
 for iSelect = select(:)'
-    freqPre.powspctrm = EEG.icawinv(:,iSelect).*EEG.icawinv(:,iSelect);
-    freqPre.crsspctrm = EEG.icawinv(:,iSelect)*EEG.icawinv(:,iSelect)';
+    freqPre.powspctrm = EEG.icawinv(chans,iSelect).*EEG.icawinv(chans,iSelect);
+    freqPre.crsspctrm = EEG.icawinv(chans,iSelect)*EEG.icawinv(chans,iSelect)';
     
     sourcePost_nocon = ft_sourceanalysis(cfg, freqPre);
 
