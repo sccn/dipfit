@@ -26,6 +26,7 @@
 %                your selected head model).
 %   'chansel'  - [integer vector] indices of channels to use for dipole fitting. 
 %                {default: all}
+%   'chanomit' - [integer vector] indices of channels to omit {default: none} 
 %   'electrodes' - [integer array] indices of channels to include
 %                  in the dipole model. {default: all}
 %   'model'      - ['standardBEM'|'standardBESA'] use one of the standard
@@ -308,8 +309,12 @@ if nargin < 2
             options = { options{:} 'coordformat' 'other' };
         end
     end
-    if ~restag.coregcheckbox, options = { options{:} 'coord_transform' str2num(restag.coregtext) }; end
-    options = { options{:} 'chansel' setdiff(1:EEG(1).nbchan, str2num(restag.elec)) };
+    if ~restag.coregcheckbox
+        options = { options{:} 'coord_transform' str2num(restag.coregtext) }; 
+    end
+    if ~isempty(restag.elec)   
+        options = { options{:} 'chanomit' str2num(restag.elec) };
+    end
 
 else
     options = varargin;
@@ -329,7 +334,7 @@ end
 g = finputcheck(options, { 'hdmfile'  'string'    []         '';
                                  'mrifile'  ''    []         '';
                                  'chanfile' ''    []         '';
-                                 'chanfile' ''    []         '';
+                                 'chanomit' ''    []         '';
                                  'chansel'  'integer'   []         1:EEG.nbchan;
                                  'electrodes' 'integer'   []         [];
                                  'coord_transform' ''     []         ''; % this does nothing while [] set to empty
@@ -365,7 +370,11 @@ elseif strcmpi(g.model, 'standardBEM')
     OUTEEG.dipfit.coordformat = template_models(2).coordformat;
     [~, OUTEEG.dipfit.coord_transform] = lookupchantemplate(originalChanfile, template_models(2).coord_transform);
 end
-OUTEEG.dipfit.chansel     = g.chansel;
+if ~isempty(g.chanomit)
+    OUTEEG.dipfit.chansel = setdiff(1:EEG.nbchan, g.chanomit);
+else
+    OUTEEG.dipfit.chansel = g.chansel;
+end
 if ischar(g.coord_transform)
     if isequal(g.coord_transform, 'warpfiducials')
         [~,coord_transform] = coregister(EEG.chaninfo.nodatchans, OUTEEG.dipfit.chanfile, 'warp', 'auto', 'manual', 'off');
