@@ -122,6 +122,7 @@ function [EEG, com] = pop_multifit(EEG, comps, varargin)
     % ---------------
     if isstruct(g.settings)
         EEG.dipfit = g.settings;
+        EEG.dipfit.model = [];
     elseif ~isempty(g.settings)
         EEG = pop_dipfit_settings( EEG, g.settings{:}); % will probably not work but who knows
     end

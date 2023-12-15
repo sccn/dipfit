@@ -2,7 +2,8 @@
 %                   distance between the component and each of the vertices
 %                   of the surface atlas is being computed. The area
 %                   selected is the one of the point closest to the
-%                   component equivalent dipole. 
+%                   component equivalent dipole. This function looks up
+%                   areas in the Desikan-Killiany atlas.
 %
 % Usage:
 %   >> OUTEEG = eeg_compatlas(INEEG, 'key1', value1);
@@ -11,7 +12,8 @@
 %   INEEG         - input EEG dataset structure
 %
 % Optional inputs
-%   'atlas'       - {'dk'} Surface atlas to use. Default is 
+%   'components'  - [integer] index of the component. Default is all
+%                   components.
 %
 % Outputs:
 %   OUTEEG        - new EEG dataset structure with updated dipfit structure

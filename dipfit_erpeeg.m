@@ -1,4 +1,4 @@
-% dipfit_erpeeg - fit multiple component dipoles using DIPFIT 
+% dipfit_erpeeg - fit data dipoles using DIPFIT 
 %
 % Usage:
 %         >> [ dipole model EEG] = dipfit_erpeeg(data, chanlocs, 'key', 'val', ...);
@@ -28,6 +28,12 @@
 %
 % Note: residual variance is set to NaN if Dipfit does not converge
 %  
+% Example:
+% eeglab epoch % read epoch dataset
+% EEG = pop_dipfit_settings( EEG ); % choose BEM model
+% dipole = dipfit_erpeeg(mean(mean(EEG.data(:,150:170,:),3),2), EEG.chanlocs, 'settings', EEG.dipfit);
+% dipplot(dipole, 'coordformat', EEG.dipfit.coordformat, 'mri', EEG.dipfit.mrifile, 'normlen', 'on' );
+% 
 % Author: Arnaud Delorme, SCCN/INC/UCSD, La Jolla, Nov. 2003
 
 % Copyright (C) 10/2003 Arnaud Delorme, SCCN/INC/UCSD, arno@sccn.ucsd.edu
@@ -46,17 +52,17 @@
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-function [dipoles, model, EEG] = dipfit_erpeeg(DATA, chanlocs, varargin);
+function [dipoles, model, EEG] = dipfit_erpeeg(DATA, chanlocs, varargin)
     
     if nargin < 1
         help dipfit_erpeeg;
         return;
-    end;
+    end
     
     ncomps = size(DATA,2);
     if size(DATA,1) ~= length(chanlocs)
         error('# of row in ''DATA'' must equal # of channels in ''chanlocs''');
-    end;
+    end
         
     % faking an EEG dataset
     % ---------------------
@@ -66,8 +72,8 @@ function [dipoles, model, EEG] = dipfit_erpeeg(DATA, chanlocs, varargin);
     EEG.pnts     = 1000;
     EEG.trials   = 1;
     EEG.chanlocs = chanlocs;
-    EEG.icawinv    = [ DATA DATA ];
-    EEG.icaweights = zeros(size([ DATA DATA ]))';
+    EEG.icawinv    = [ DATA DATA(:,1) ];
+    EEG.icaweights = zeros(size([ DATA DATA(:,1) ]))';
     EEG.icasphere  = zeros(size(DATA,1), size(DATA,1));
     %EEG            = eeg_checkset(EEG);
     EEG.icaact     = EEG.icaweights*EEG.icasphere*EEG.data(:,:);
@@ -75,20 +81,20 @@ function [dipoles, model, EEG] = dipfit_erpeeg(DATA, chanlocs, varargin);
     
     % uses mutlifit to fit dipoles
     % ----------------------------
-    EEG            = pop_multifit(EEG, [1:ncomps], varargin{:});
+    EEG            = pop_multifit(EEG, 1:ncomps, varargin{:});
     
     % process outputs
     % ---------------
-    dipoles = EEG.dipfit.model;
+    dipoles = EEG.dipfit.model(1:ncomps);
     if isfield(dipoles, 'active')
         dipoles = rmfield(dipoles, 'active');
-    end;
+    end
     if isfield(dipoles, 'select')
         dipoles = rmfield(dipoles, 'select');
-    end;
+    end
     model   = EEG.dipfit;
     if isfield(model, 'model')
         model   = rmfield(model, 'model');
-    end;
+    end
     return;
     
