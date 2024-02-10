@@ -10,6 +10,11 @@ For documentation see https://eeglab.org/tutorials/09_source/DIPFIT.html
 
 Version history
 =====
+v5.4
+- Adding Neuromag coordinate format
+- Better support to exclude channels
+- Better support for STUDY and group-level Leadfield computation
+
 v5.3
 - Fixing ignoring channel when computing LeadField matrix
 - Fixing setting up fiducial manually
