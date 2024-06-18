@@ -61,6 +61,14 @@
 
 function [EEG,com] = pop_leadfield(EEG, varargin)
 
+if nargin < 1
+    help pop_leadfield
+    return
+end
+if ~exist('dpss', 'file')
+    error('You need the Signal Processing Toolbox to run this command')
+end
+
 % define source models
 p  = fileparts(which('eeglab.m'));
 roi(1).label = 'Surface source model: Colin27 (with Desikan-Kilianny atlas)';
@@ -303,6 +311,7 @@ else
 end
 cfg.sourcemodel.inside = ones(size(sourcemodelOri.pos,1),1) > 0;
 cfg.sourcemodel.pos    = sourcemodelOri.pos;
+cfg.sourcemodel.unit   = 'mm'; % for Monkey brain, might not work for MEG
 if isfield(sourcemodelOri, 'tri')
     cfg.sourcemodel.tri    = sourcemodelOri.tri;
 end
