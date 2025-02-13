@@ -67,9 +67,9 @@ try
     template_models = [];
     template_models(end+1).name     = 'Template Spherical Four-Shell (BESA)';
     template_models(end).shortname = 'standardBESA';
-    template_models(end).hdmfile  = fullfile(folder, 'standard_BESA', 'standard_BESA.mat');
-    template_models(end).mrifile  = fullfile(folder, 'standard_BESA', 'avg152t1.mat');
-    template_models(end).chanfile = fullfile(folder, 'standard_BESA', 'standard-10-5-cap385.elp');
+    template_models(end).hdmfile  = 'standard_BESA.mat';
+    template_models(end).mrifile  = 'avg152t1.mat';
+    template_models(end).chanfile = 'standard-10-5-cap385.elp';
     template_models(end).coordformat = 'spherical';
     template_models(end).coregval = true;
     template_models(end).coord_transform(1).transform = [ ];
@@ -85,9 +85,9 @@ try
 
     template_models(end+1).name     = 'Template Boundary Element Model (MNI)';
     template_models(end).shortname = 'standardBEM';
-    template_models(end).hdmfile  = fullfile(folder, 'standard_BEM', 'standard_vol.mat' );
-    template_models(end).mrifile  = fullfile(folder, 'standard_BEM', 'standard_mri.mat' );
-    template_models(end).chanfile = fullfile(folder, 'standard_BEM', 'elec', 'standard_1005.elc' ); % issue reading CED file
+    template_models(end).hdmfile  = 'standard_vol.mat';
+    template_models(end).mrifile  = 'standard_mri.mat';
+    template_models(end).chanfile = 'standard_1005.elc'; % issue reading CED file
     template_models(end).coordformat = 'MNI';
     template_models(end).coregval = true;
     template_models(end).coord_transform(1).transform = [ 0 0 0 0 0 -pi/2  1 1 1];

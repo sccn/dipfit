@@ -45,6 +45,14 @@ function vers = eegplugin_dipfit(fig, trystrs, catchstrs)
         error('eegplugin_dipfit requires 3 arguments');
     end
     
+    if ~exist('standard_mri.mat', 'file')
+        dipfitp = fileparts(which('dipfitdefs.m'));
+        addpath(fullfile(dipfitp, 'standard_BEM'));
+        addpath(fullfile(dipfitp, 'standard_BEM', 'elec'));
+        addpath(fullfile(dipfitp, 'standard_BEM', 'skin'));
+        addpath(fullfile(dipfitp, 'standard_BESA'));
+    end
+
     % find tools menu
     % ---------------
     menu = findobj(fig, 'tag', 'tools'); 
