@@ -75,16 +75,17 @@ catch
     elseif strcmpi(EEG.dipfit.coordformat, 'spherical')
         tf = traditionaldipfit([-5.658258      1.039259     -42.80596   -0.00981033    0.03362692   0.004391199      860.8199      926.6112       858.162]);
     else
-        error('Unknown coordinate format')
+        fprintf(2, 'Unknown coordinate format')
     end
 end
+
 tfinv = pinv(tf); % the transformation is from HM to MNI (we need to invert it)
 
 % scan dipoles
 fprintf('Looking up brain area in the Desikan-Killiany Atlas\n');
 for iComp = g.components(:)'
-    if size(EEG.dipfit.model(iComp).posxyz,1) == 1
-        atlascoord = tfinv * [EEG.dipfit.model(iComp).posxyz 1]';
+    if size(EEG.dipfit.model(iComp).posxyz,1) == 1 || all(EEG.dipfit.model(iComp).posxyz(2,:) == 0)
+        atlascoord = tfinv * [EEG.dipfit.model(iComp).posxyz(1,:) 1]';
         
         % find close location in Atlas
         distance = sqrt(sum((hm.cortex.vertices-repmat(atlascoord(1:3)', [size(hm.cortex.vertices,1) 1])).^2,2));
