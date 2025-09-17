@@ -10,6 +10,9 @@ For documentation see [https://eeglab.org/tutorials/09_source/DIPFIT.html](https
 
 Version history
 =====
+v5.6
+- Fix rank for Loreta
+
 v5.5
 - Force unit to mm for Leadfield Matrix computation
 
