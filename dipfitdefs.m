@@ -62,6 +62,14 @@ defaultvolume.o = [0 0 0];
 % ----------------------
 %#function pop_dipfit_settings
 folder = fileparts(which('pop_dipfit_settings'));
+% template files below are referenced by name only; eegplugin_dipfit adds their
+% folders to the path, but it is not called when EEGLAB starts with 'nogui'
+if ~isempty(folder) && ~isdeployed && ~exist('standard_mri.mat', 'file')
+    addpath(fullfile(folder, 'standard_BEM'));
+    addpath(fullfile(folder, 'standard_BEM', 'elec'));
+    addpath(fullfile(folder, 'standard_BEM', 'skin'));
+    addpath(fullfile(folder, 'standard_BESA'));
+end
 try
     delim  = folder(end);
     template_models = [];
